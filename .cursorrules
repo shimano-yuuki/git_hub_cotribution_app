@@ -1,0 +1,154 @@
+# Flutter Feature-First Architecture 開発ガイド
+
+このプロジェクトは **Feature-First アーキテクチャ** に従って開発します。
+`flutter_feature_first_prompt.md` を参考に、機能単位でコードを整理してください。
+
+## 📋 基本方針
+
+### Feature-First アーキテクチャの原則
+
+1. **機能単位でコードを整理**: レイヤー（data/domain/presentation）ではなく、**機能（feature）ごと**にフォルダを作成
+2. **各 feature は独立**: 他の feature に直接依存しない
+3. **3層構造**: 各 feature は `data/`, `domain/`, `presentation/` の3層を持つ
+
+## 🏗️ プロジェクト構造
+
+```
+lib/
+├── main.dart
+├── app.dart                          # MaterialApp の設定
+│
+├── core/                             # 共通機能・ユーティリティ
+│   ├── di/                           # Dependency Injection
+│   ├── theme/                        # テーマ・スタイル
+│   ├── constants/                    # 定数
+│   ├── utils/                        # ユーティリティ関数
+│   ├── extensions/                   # Dart拡張
+│   ├── router/                       # ルーティング
+│   └── error/                        # エラーハンドリング
+│
+├── shared/                           # 複数featureで共有するコンポーネント
+│   ├── widgets/                      # 共通ウィジェット
+│   ├── models/                       # 共通モデル
+│   ├── services/                     # 共通サービス
+│   └── repositories/                 # 共通リポジトリ
+│
+└── features/                         # 機能単位のモジュール
+    ├── authentication/               # 認証機能
+    ├── home/                         # ホーム機能
+    ├── profile/                      # プロフィール機能
+    └── settings/                     # 設定機能
+```
+
+## 📝 実装時のルール
+
+### 1. Feature の構造
+
+各 feature は以下の3層構造を持ちます：
+
+#### Data Layer（データ層）
+- `models/`: JSON とやり取りするためのデータモデル
+- `datasources/`: API 呼び出しやローカルストレージへのアクセス
+- `repositories/`: domain layer のリポジトリインターフェースの実装
+
+#### Domain Layer（ドメイン層）
+- `entities/`: ビジネスモデル（UIやDBに依存しない純粋なDartクラス）
+- `repositories/`: データ取得のインターフェース（抽象クラス）
+- `usecases/`: 特定のビジネスロジックを実行（Single Responsibility）
+
+#### Presentation Layer（プレゼンテーション層）
+- `providers/`: 状態管理（Riverpod推奨）
+- `screens/`: 画面（各 feature の画面）
+- `widgets/`: その feature 専用のウィジェット
+
+### 2. Core と Shared の使い分け
+
+#### core/
+- アプリ全体で使用される**基盤的な機能**
+- 例: DI、ルーティング、テーマ、定数、エラーハンドリング
+- **ビジネスロジックを含まない**
+
+#### shared/
+- 複数の feature で**再利用されるコンポーネント**
+- 例: 共通ウィジェット、共通モデル、共通サービス
+- **ビジネスロジックを含む場合がある**
+
+### 3. 新しい Feature を追加する手順
+
+1. **フォルダ構造を作成**
+   ```
+   lib/features/{feature_name}/
+   ├── data/
+   │   ├── models/
+   │   ├── datasources/
+   │   └── repositories/
+   ├── domain/
+   │   ├── entities/
+   │   ├── repositories/
+   │   └── usecases/
+   └── presentation/
+       ├── providers/
+       ├── screens/
+       └── widgets/
+   ```
+
+2. **Domain Layer から実装**
+   - Entity を定義
+   - Repository のインターフェースを定義
+   - UseCase を実装
+
+3. **Data Layer を実装**
+   - Model を作成（JSON <-> Entity 変換）
+   - DataSource を実装
+   - Repository の実装を作成
+
+4. **Presentation Layer を実装**
+   - Provider/Notifier を作成
+   - Screen を作成
+   - Widget を作成
+
+5. **DI に登録** (`core/di/injection.dart`)
+
+## ✅ ベストプラクティス
+
+### DO ✅
+
+- ✅ 1つの feature は独立している（他の feature に依存しない）
+- ✅ `shared/` に共通コンポーネントを配置
+- ✅ UseCase は1つのことだけをする（Single Responsibility）
+- ✅ Model と Entity を分離する
+- ✅ DI を使用してテスタブルにする
+- ✅ `Either<Failure, T>` でエラーハンドリング（fpdart または dartz）
+
+### DON'T ❌
+
+- ❌ feature 間で直接依存しない
+- ❌ Presentation Layer で直接 API を叩かない
+- ❌ Domain Layer に Flutter の Widget を使わない
+- ❌ すべてを `shared/` に入れない（本当に共有されるものだけ）
+
+## 🎯 コード実装時の注意事項
+
+1. **新しい機能を追加する際は、必ず feature フォルダを作成する**
+2. **既存の feature を修正する際は、その feature 内のファイルのみを編集する**
+3. **共通機能が必要な場合は、`core/` または `shared/` に配置するか検討する**
+4. **ファイルを作成する際は、適切なディレクトリ構造に従う**
+5. **DI を使用する場合は、`core/di/injection.dart` に登録する**
+
+## 📦 推奨パッケージ
+
+- 状態管理: `flutter_riverpod`
+- ルーティング: `go_router`
+- エラーハンドリング: `dartz` または `fpdart`
+- HTTP: `dio`
+- ローカルストレージ: `shared_preferences` または `hive`
+- JSON シリアライゼーション: `freezed`, `json_serializable`
+
+## 📚 詳細な実装例
+
+詳細な実装例やコードサンプルは `flutter_feature_first_prompt.md` を参照してください。
+
+---
+
+**重要**: このプロジェクトでコードを実装・修正する際は、必ずこの Feature-First アーキテクチャに従ってください。
+
