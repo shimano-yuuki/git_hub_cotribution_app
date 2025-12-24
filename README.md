@@ -1,16 +1,24 @@
-# git_hub_contribution_app
+# GitHub Contribution App
 
-A new Flutter project.
+GitHubのコントリビューション（草）を可視化・管理するFlutterアプリケーションです。
 
-## Getting Started
+## 概要
 
-This project is a starting point for a Flutter application.
+このアプリは、GitHubのPersonal Access Tokenを使用して、あなたのコントリビューション履歴を取得し、
+見やすく表示します。日々の開発活動を追跡し、モチベーション維持に役立てることができます。
 
-A few resources to get you started if this is your first Flutter project:
+## 主な機能
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- 🟩 コントリビューションカレンダーの表示
+- 📊 日別・週別・月別の統計情報
+- 🔥 連続コントリビューション日数（ストリーク）の表示
+- ⚙️ Personal Access Tokenの安全な管理
+- 🔄 データのリフレッシュ機能
+- 広告なしで洗練されたUI
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## スクリーンショット
+
+### 現在鋭意作成中
+
+## インストール
+後ほど...
