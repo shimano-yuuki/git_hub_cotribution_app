@@ -1,0 +1,97 @@
+name: Bug Report
+description: バグを報告する
+title: "[Bug]: "
+labels: ["bug"]
+assignees: []
+body:
+- type: markdown
+  attributes:
+    value: |
+      バグを報告してください。できるだけ詳細な情報を提供していただくと、迅速に対応できます。
+- type: textarea
+  id: bug-description
+  attributes:
+    label: バグの説明
+    description: バグの概要を簡潔に説明してください
+    placeholder: |
+      例: ログイン画面で「ログイン」ボタンを押しても何も起こらない
+  validations:
+    required: true
+- type: textarea
+  id: reproduction-steps
+  attributes:
+    label: 再現手順
+    description: バグを再現する手順を記載してください
+    placeholder: |
+      1. 「設定」画面を開く
+      2. 「トークンを入力」ボタンをタップ
+      3. 何も入力せずに「保存」ボタンをタップ
+      4. エラーメッセージが表示されない
+  validations:
+    required: true
+- type: textarea
+  id: expected-behavior
+  attributes:
+    label: 期待される動作
+    description: 正常な場合に期待される動作を記載してください
+    placeholder: |
+      例: トークンが未入力の場合は、バリデーションエラーメッセージが表示されるべき
+  validations:
+    required: true
+- type: textarea
+  id: actual-behavior
+  attributes:
+    label: 実際の動作
+    description: 実際に起こった動作を記載してください
+    placeholder: |
+      例: エラーメッセージが表示されず、そのまま画面が遷移してしまう
+  validations:
+    required: true
+- type: textarea
+  id: screenshots
+  attributes:
+    label: スクリーンショット
+    description: 可能であれば、問題を説明するスクリーンショットを添付してください
+    placeholder: |
+      スクリーンショットをここにドラッグ&ドロップするか、画像リンクを貼り付けてください
+  validations:
+    required: false
+- type: dropdown
+  id: platform
+  attributes:
+    label: プラットフォーム
+    description: バグが発生したプラットフォームを選択してください
+    options:
+      - iOS
+      - Android
+  validations:
+    required: true
+- type: input
+  id: os-version
+  attributes:
+    label: OS バージョン
+    description: 使用しているOSのバージョンを記載してください
+    placeholder: "例: iOS 17.0, Android 13"
+  validations:
+    required: false
+- type: input
+  id: app-version
+  attributes:
+    label: アプリバージョン
+    description: 使用しているアプリのバージョンを記載してください
+    placeholder: "例: 1.0.0"
+  validations:
+    required: false
+- type: textarea
+  id: additional-context
+  attributes:
+    label: 追加のコンテキスト
+    description: バグに関連するその他の情報があれば記載してください（ログ、エラーメッセージなど）
+    placeholder: |
+      例: コンソールに以下のエラーが表示されていました:
+      ```
+      Error: Null check operator used on a null value
+      ```
+  validations:
+    required: false
+
