@@ -1,0 +1,71 @@
+name: Development Task
+description: 開発タスクを作成する
+title: "[Task]: "
+labels: ["task"]
+assignees: []
+body:
+- type: markdown
+  attributes:
+    value: |
+      開発タスクを作成します
+- type: textarea
+  id: task-description
+  attributes:
+    label: タスクの概要
+    description: このタスクで実装する内容を説明してください
+    placeholder: |
+      例: Settings 画面の UI 実装
+  validations:
+    required: true
+- type: textarea
+  id: task-details
+  attributes:
+    label: 詳細タスク
+    description: 具体的な作業内容をチェックリストで記載してください
+    value: |
+      - [ ] サブタスク 1
+      - [ ] サブタスク 2
+      - [ ] サブタスク 3
+  validations:
+    required: true
+- type: textarea
+  id: acceptance-criteria
+  attributes:
+    label: 受け入れ基準
+    description: このタスクが完了したと判断する基準を記載してください
+    placeholder: |
+      - トークン入力フォームが表示される
+      - 入力したトークンが保存される
+      - バリデーションが正しく動作する
+  validations:
+    required: true
+- type: dropdown
+  id: milestone
+  attributes:
+    label: マイルストーン
+    description: このタスクが属するマイルストーンを選択してください
+    options:
+      - M1 - プロジェクトセットアップ
+      - M2 - 認証・設定機能
+      - M3 - ホーム画面・データ表示
+      - M4 - UI/UX 改善
+      - M5 - テスト・リリース準備
+  validations:
+    required: true
+- type: input
+  id: estimate
+  attributes:
+    label: 見積もり時間
+    description: このタスクにかかる予想時間を記載してください
+    placeholder: "例: 4 時間"
+  validations:
+    required: false
+- type: textarea
+  id: related-issues
+  attributes:
+    label: 関連 Issue
+    description: 関連する Issue 番号があれば記載してください
+    placeholder: "#1, #5"
+  validations:
+    required: false
+
