@@ -1,67 +1,34 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
 
-class MainNavigation extends StatefulWidget {
-  final Widget child;
-
-  const MainNavigation({
-    super.key,
-    required this.child,
-  });
-
-  @override
-  State<MainNavigation> createState() => _MainNavigationState();
-}
-
-class _MainNavigationState extends State<MainNavigation> {
-  void _onItemTapped(int index) {
-    switch (index) {
-      case 0:
-        context.go('/home');
-        break;
-      case 1:
-        context.go('/profile');
-        break;
-      case 2:
-        context.go('/settings');
-        break;
-    }
-  }
+class MainNavigation extends HookWidget {
+  const MainNavigation({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).uri.path;
-
-    int currentIndex = 0;
-    if (location == '/home') {
-      currentIndex = 0;
-    } else if (location == '/profile') {
-      currentIndex = 1;
-    } else if (location == '/settings') {
-      currentIndex = 2;
-    }
+    final tabController = useTabController(initialLength: 2);
 
     return Scaffold(
-      body: widget.child,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'ホーム',
+      appBar: AppBar(title: const Text('GitHub Contribution App')),
+      body: TabBarView(
+        controller: tabController,
+        children: const [ProfileScreen(), SettingsScreen()],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          color: Theme.of(context).colorScheme.surface,
+          child: TabBar(
+            controller: tabController,
+            indicatorSize: TabBarIndicatorSize.tab,
+            tabs: const [
+              Tab(icon: Icon(Icons.person), text: 'プロフィール'),
+              Tab(icon: Icon(Icons.settings), text: '設定'),
+            ],
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'プロフィール',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: '設定',
-          ),
-        ],
+        ),
       ),
     );
   }
 }
-
