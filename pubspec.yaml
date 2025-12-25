@@ -37,6 +37,9 @@ dependencies:
   
   # ルーティング
   go_router: ^14.0.0
+  
+  # Hooks
+  flutter_hooks: ^0.20.0
 
 dev_dependencies:
   flutter_test:
