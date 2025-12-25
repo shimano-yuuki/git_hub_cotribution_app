@@ -1,0 +1,143 @@
+name: Feature Pull Request
+description: 新機能の追加
+title: "[Feature]: "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🆕 新機能の追加
+        実装した新機能について詳しく説明してください。
+
+  - type: textarea
+    id: feature-summary
+    attributes:
+      label: 📝 機能の概要
+      description: この機能が何をするのか、なぜ必要なのかを説明してください
+      placeholder: |
+        例:
+        GitHub Personal Access Tokenを入力・保存する機能を追加しました。
+        これにより、ユーザーがGitHub APIと連携できるようになります。
+    validations:
+      required: true
+
+  - type: input
+    id: related-issue
+    attributes:
+      label: 🔗 関連 Issue
+      description: 関連するIssue番号を記載してください
+      placeholder: "例: #5"
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation-details
+    attributes:
+      label: 🛠️ 実装内容
+      description: 具体的な実装内容をチェックリスト形式で記載してください
+      value: |
+        - [ ] 実装項目1
+        - [ ] 実装項目2
+        - [ ] 実装項目3
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 スクリーンショット
+      description: UI変更がある場合は、スクリーンショットを添付してください
+      placeholder: |
+        変更後:
+        [スクリーンショットをここにドラッグ&ドロップ]
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: test-checklist
+    attributes:
+      label: 🧪 テスト
+      description: 実施したテストにチェックを入れてください
+      options:
+        - label: ユニットテストを追加しました
+          required: true
+        - label: ウィジェットテストを追加しました
+        - label: 手動テストを実施しました
+          required: true
+        - label: すべてのテストが通過しました
+          required: true
+
+  - type: textarea
+    id: test-details
+    attributes:
+      label: テスト内容の詳細
+      description: 具体的なテスト内容を記載してください
+      placeholder: |
+        - 入力バリデーションのユニットテスト
+        - フォーム送信のウィジェットテスト
+        - エッジケースの確認
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: code-quality
+    attributes:
+      label: 📋 コード品質チェックリスト
+      options:
+        - label: Feature-First アーキテクチャに従っています
+          required: true
+        - label: コードスタイルガイドラインに準拠しています
+          required: true
+        - label: 不要なコメント・デバッグコードを削除しました
+          required: true
+        - label: 適切なコメントを追加しました
+          required: true
+        - label: ドキュメントを更新しました（必要に応じて）
+        - label: pubspec.yaml を更新しました（依存関係変更時）
+        - label: ビルドエラー・警告がありません
+          required: true
+        - label: flutter analyze が通過しています
+          required: true
+
+  - type: textarea
+    id: breaking-changes
+    attributes:
+      label: ⚠️ Breaking Changes
+      description: 既存の機能に影響を与える変更がある場合は記載してください
+      placeholder: |
+        例:
+        - API の引数が変更されました
+        - 設定ファイルの形式が変更されました
+    validations:
+      required: false
+
+  - type: textarea
+    id: reviewer-notes
+    attributes:
+      label: 🔍 レビュアーへの注意事項
+      description: レビュアーに特に確認してほしい点を記載してください
+      placeholder: |
+        例:
+        - エラーハンドリングの実装を重点的に確認してください
+        - パフォーマンスへの影響を確認してください
+    validations:
+      required: false
+
+  - type: textarea
+    id: references
+    attributes:
+      label: 📚 参考資料
+      description: 参考にした資料やドキュメントがあれば記載してください
+      placeholder: |
+        - https://docs.flutter.dev/...
+        - https://pub.dev/packages/...
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: closes-issue
+    attributes:
+      label: ✅ Issue自動クローズ
+      description: このPRがマージされた時にIssueを自動でクローズしますか？
+      options:
+        - label: "はい（PR本文に `Closes #番号` を追加してください）"
