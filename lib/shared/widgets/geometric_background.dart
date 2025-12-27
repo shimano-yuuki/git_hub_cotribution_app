@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 
 /// 緑と黒のグラデーションと網代麻の葉の模様の背景ウィジェット
 class GeometricBackground extends StatelessWidget {
@@ -38,10 +39,10 @@ class _GeometricPatternPainter extends CustomPainter {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        const Color(0xFF1A1A1A), // 薄い黒
-        const Color(0xFF1A2A1A), // 薄い緑がかった黒
-        const Color(0xFF1A3A1A), // 薄い緑
-        const Color(0xFF1A1A1A), // 薄い黒に戻る
+        AppColors.darkGrey, // ダークグレー
+        AppColors.darkGreenBlack, // 薄い緑がかったグレー
+        AppColors.darkGreen, // 薄い緑
+        AppColors.darkGrey, // ダークグレーに戻る
       ],
       stops: const [0.0, 0.4, 0.6, 1.0],
     );
@@ -60,7 +61,7 @@ class _GeometricPatternPainter extends CustomPainter {
   /// 網代模様: 斜めの平行線を複数方向に重ねる
   void _drawAjiroPattern(Canvas canvas, Size size) {
     final linePaint = Paint()
-      ..color = const Color(0xFF00FF88).withOpacity(0.08)
+      ..color = AppColors.terminalGreen.withOpacity(0.08)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
@@ -80,7 +81,7 @@ class _GeometricPatternPainter extends CustomPainter {
 
     // 左斜め下方向の平行線
     final leftLinePaint = Paint()
-      ..color = const Color(0xFF00FF88).withOpacity(0.06)
+      ..color = AppColors.terminalGreen.withOpacity(0.06)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
@@ -96,7 +97,7 @@ class _GeometricPatternPainter extends CustomPainter {
   /// 麻の葉模様: 六角形の中心から各頂点に向かって線を引く
   void _drawAsanohaPattern(Canvas canvas, Size size) {
     final asanohaPaint = Paint()
-      ..color = const Color(0xFF00FF88).withOpacity(0.1)
+      ..color = AppColors.terminalGreen.withValues(alpha: 0.1)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 

@@ -1,51 +1,46 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 class AppTheme {
-  // GitHub風のエンジニア向けカラーパレット
-  static const Color _githubBlue = Color(0xFF0366D6);
-  static const Color _githubDarkBg = Color(0xFF0D1117);
-  static const Color _githubDarkSurface = Color(0xFF161B22);
-  static const Color _githubDarkBorder = Color(0xFF30363D);
-  static const Color _terminalGreen = Color(0xFF00FF88);
 
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: false,
       colorScheme: ColorScheme.light(
-        primary: _githubBlue,
-        secondary: _githubBlue,
-        surface: Colors.white,
-        background: const Color(0xFFF6F8FA),
-        error: const Color(0xFFD73A49),
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: const Color(0xFF24292E),
-        onBackground: const Color(0xFF24292E),
-        onError: Colors.white,
+        primary: AppColors.grey(700),
+        secondary: AppColors.terminalGreen,
+        surface: AppColors.white,
+        background: AppColors.githubLightBg,
+        error: AppColors.githubErrorLight,
+        onPrimary: AppColors.white,
+        onSecondary: AppColors.white,
+        onSurface: AppColors.githubDarkText,
+        onBackground: AppColors.githubDarkText,
+        onError: AppColors.white,
         brightness: Brightness.light,
       ),
-      scaffoldBackgroundColor: const Color(0xFFF6F8FA),
+      scaffoldBackgroundColor: AppColors.githubLightBg,
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Color(0xFF000000),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.darkGrey,
+        foregroundColor: AppColors.white,
         surfaceTintColor: Colors.transparent,
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        selectedItemColor: _githubBlue,
-        unselectedItemColor: Color(0xFF6A737D),
-        backgroundColor: Colors.white,
+        selectedItemColor: AppColors.terminalGreen,
+        unselectedItemColor: AppColors.githubUnselectedLight,
+        backgroundColor: AppColors.white,
       ),
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: AppColors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: const BorderSide(color: Color(0xFFE1E4E8), width: 1),
+          side: const BorderSide(color: AppColors.githubLightBorder, width: 1),
         ),
       ),
     );
@@ -55,43 +50,43 @@ class AppTheme {
     return ThemeData(
       useMaterial3: false,
       colorScheme: ColorScheme.dark(
-        primary: _githubBlue,
-        secondary: _terminalGreen,
-        surface: _githubDarkSurface,
-        background: _githubDarkBg,
-        error: const Color(0xFFF85149),
-        onPrimary: Colors.white,
-        onSecondary: _githubDarkBg,
-        onSurface: const Color(0xFFC9D1D9),
-        onBackground: const Color(0xFFC9D1D9),
-        onError: Colors.white,
+        primary: AppColors.grey(600),
+        secondary: AppColors.terminalGreen,
+        surface: AppColors.githubDarkSurface,
+        background: AppColors.githubDarkBg,
+        error: AppColors.githubErrorDark,
+        onPrimary: AppColors.white,
+        onSecondary: AppColors.githubDarkBg,
+        onSurface: AppColors.githubLightText,
+        onBackground: AppColors.githubLightText,
+        onError: AppColors.white,
         brightness: Brightness.dark,
       ),
-      scaffoldBackgroundColor: _githubDarkBg,
+      scaffoldBackgroundColor: AppColors.githubDarkBg,
       appBarTheme: const AppBarTheme(
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Color(0xFF000000),
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.darkGrey,
+        foregroundColor: AppColors.white,
         surfaceTintColor: Colors.transparent,
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        selectedItemColor: _githubBlue,
-        unselectedItemColor: const Color(0xFF8B949E),
-        backgroundColor: _githubDarkSurface,
+        selectedItemColor: AppColors.terminalGreen,
+        unselectedItemColor: AppColors.githubUnselectedDark,
+        backgroundColor: AppColors.githubDarkSurface,
       ),
       cardTheme: CardThemeData(
-        color: _githubDarkSurface,
+        color: AppColors.githubDarkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: _githubDarkBorder, width: 1),
+          side: const BorderSide(color: AppColors.githubDarkBorder, width: 1),
         ),
       ),
-      dividerColor: _githubDarkBorder,
+      dividerColor: AppColors.githubDarkBorder,
     );
   }
 }

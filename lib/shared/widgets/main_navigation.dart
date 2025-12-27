@@ -4,6 +4,7 @@ import 'package:circular_bottom_navigation/circular_bottom_navigation.dart';
 import 'package:circular_bottom_navigation/tab_item.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
+import '../../core/theme/app_colors.dart';
 import 'geometric_background.dart';
 
 class MainNavigation extends HookWidget {
@@ -26,16 +27,16 @@ class MainNavigation extends HookWidget {
       TabItem(
         Icons.person,
         "Contribution",
-        const Color(0xFF1A2A1A),
-        circleStrokeColor: const Color(0xFF1A2A1A),
-        labelStyle: const TextStyle(color: Colors.white),
+        AppColors.darkGreenBlack,
+        circleStrokeColor: AppColors.darkGreenBlack,
+        labelStyle: const TextStyle(color: AppColors.white),
       ),
       TabItem(
         Icons.settings,
         "Settings",
-        const Color(0xFF1A2A1A),
-        circleStrokeColor: const Color(0xFF1A2A1A),
-        labelStyle: const TextStyle(color: Colors.white),
+        AppColors.darkGreenBlack,
+        circleStrokeColor: AppColors.darkGreenBlack,
+        labelStyle: const TextStyle(color: AppColors.white),
       ),
     ];
 
@@ -50,9 +51,9 @@ class MainNavigation extends HookWidget {
         controller: navigationController,
         selectedPos: selectedPos.value,
         barHeight: 80.0,
-        barBackgroundColor: Colors.black,
-        selectedIconColor: Colors.white,
-        normalIconColor: Colors.grey.shade400,
+        barBackgroundColor: AppColors.darkGrey,
+        selectedIconColor: AppColors.white,
+        normalIconColor: AppColors.grey(400),
         animationDuration: const Duration(milliseconds: 300),
         selectedCallback: (int? selectedPosValue) {
           selectedPos.value = selectedPosValue ?? 0;

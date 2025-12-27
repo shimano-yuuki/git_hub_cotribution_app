@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -6,16 +7,11 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    final textColor = brightness == Brightness.dark
-        ? const Color(0xFFC9D1D9)
-        : const Color(0xFF24292E);
-    final iconColor = brightness == Brightness.dark
-        ? const Color(0xFF00FF88)
-        : const Color(0xFF0366D6);
-
+    final textColor = AppColors.textColor(brightness);
+    final iconColor = AppColors.iconColor(brightness);
     final backgroundColor = brightness == Brightness.dark
-        ? const Color(0xFF161B22).withOpacity(0.9)
-        : Colors.white.withOpacity(0.95);
+        ? AppColors.githubDarkSurface.withOpacity(0.9)
+        : AppColors.white.withOpacity(0.95);
 
     return Center(
       child: Container(
@@ -25,9 +21,7 @@ class SettingsScreen extends StatelessWidget {
           color: backgroundColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: brightness == Brightness.dark
-                ? const Color(0xFF30363D)
-                : const Color(0xFFE1E4E8),
+            color: AppColors.borderColor(brightness),
             width: 1,
           ),
         ),
