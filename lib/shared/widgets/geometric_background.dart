@@ -1,0 +1,146 @@
+import 'dart:math' as math;
+import 'package:flutter/material.dart';
+
+/// 緑と黒のグラデーションと網代麻の葉の模様の背景ウィジェット
+class GeometricBackground extends StatelessWidget {
+  final Widget child;
+  final bool animate;
+
+  const GeometricBackground({
+    super.key,
+    required this.child,
+    this.animate = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        CustomPaint(
+          painter: _GeometricPatternPainter(animate: animate),
+          size: Size.infinite,
+        ),
+        child,
+      ],
+    );
+  }
+}
+
+class _GeometricPatternPainter extends CustomPainter {
+  final bool animate;
+
+  _GeometricPatternPainter({required this.animate});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // グラデーション背景（薄くする）
+    final gradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        const Color(0xFF1A1A1A), // 薄い黒
+        const Color(0xFF1A2A1A), // 薄い緑がかった黒
+        const Color(0xFF1A3A1A), // 薄い緑
+        const Color(0xFF1A1A1A), // 薄い黒に戻る
+      ],
+      stops: const [0.0, 0.4, 0.6, 1.0],
+    );
+
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final paint = Paint()..shader = gradient.createShader(rect);
+    canvas.drawRect(rect, paint);
+
+    // 網代模様（斜めの平行線）
+    _drawAjiroPattern(canvas, size);
+
+    // 麻の葉模様（六角形の中心から放射状に線を引く）
+    _drawAsanohaPattern(canvas, size);
+  }
+
+  /// 網代模様: 斜めの平行線を複数方向に重ねる
+  void _drawAjiroPattern(Canvas canvas, Size size) {
+    final linePaint = Paint()
+      ..color = const Color(0xFF00FF88).withOpacity(0.08)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
+    final spacing = 40.0;
+    final diagonalLength = math.sqrt(
+      size.width * size.width + size.height * size.height,
+    );
+
+    // 右斜め下方向の平行線
+    for (double i = -diagonalLength; i < diagonalLength; i += spacing) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height * 0.577, size.height), // tan(30°) ≈ 0.577
+        linePaint,
+      );
+    }
+
+    // 左斜め下方向の平行線
+    final leftLinePaint = Paint()
+      ..color = const Color(0xFF00FF88).withOpacity(0.06)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+
+    for (double i = -diagonalLength; i < diagonalLength; i += spacing) {
+      canvas.drawLine(
+        Offset(size.width + i, 0),
+        Offset(size.width + i - size.height * 0.577, size.height),
+        leftLinePaint,
+      );
+    }
+  }
+
+  /// 麻の葉模様: 六角形の中心から各頂点に向かって線を引く
+  void _drawAsanohaPattern(Canvas canvas, Size size) {
+    final asanohaPaint = Paint()
+      ..color = const Color(0xFF00FF88).withOpacity(0.1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    final hexSize = 80.0; // 六角形のサイズ
+    final hexRadius = hexSize / 2;
+    final hexHeight = hexSize * math.sqrt(3) / 2; // 正六角形の高さ
+
+    // 六角形のグリッドを計算
+    final cols = (size.width / hexSize).ceil() + 2;
+    final rows = (size.height / hexHeight).ceil() + 2;
+
+    for (int row = 0; row < rows; row++) {
+      for (int col = 0; col < cols; col++) {
+        // 六角形の中心座標を計算（ハニカム構造）
+        final x = col * hexSize + (row % 2 == 0 ? 0 : hexSize / 2);
+        final y = row * hexHeight;
+        final center = Offset(x, y);
+
+        // 六角形の各頂点を計算
+        final vertices = <Offset>[];
+        for (int i = 0; i < 6; i++) {
+          final angle = (math.pi / 3) * i - math.pi / 6; // 30度回転して上向きに
+          final vertexX = center.dx + hexRadius * math.cos(angle);
+          final vertexY = center.dy + hexRadius * math.sin(angle);
+          vertices.add(Offset(vertexX, vertexY));
+        }
+
+        // 中心から各頂点に向かって線を引く（麻の葉模様）
+        for (final vertex in vertices) {
+          canvas.drawLine(center, vertex, asanohaPaint);
+        }
+
+        // 六角形の輪郭を描画
+        final hexPath = Path();
+        hexPath.moveTo(vertices[0].dx, vertices[0].dy);
+        for (int i = 1; i < vertices.length; i++) {
+          hexPath.lineTo(vertices[i].dx, vertices[i].dy);
+        }
+        hexPath.close();
+        canvas.drawPath(hexPath, asanohaPaint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => animate;
+}

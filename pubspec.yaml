@@ -40,6 +40,9 @@ dependencies:
   
   # Hooks
   flutter_hooks: ^0.20.0
+  
+  # Circular Bottom Navigation
+  circular_bottom_navigation: ^2.4.0
 
 dev_dependencies:
   flutter_test:
