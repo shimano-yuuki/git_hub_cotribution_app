@@ -2,20 +2,17 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTheme {
-
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: false,
       colorScheme: ColorScheme.light(
         primary: AppColors.grey(700),
         secondary: AppColors.terminalGreen,
-        surface: AppColors.white,
-        background: AppColors.githubLightBg,
+        surface: AppColors.githubLightBg,
         error: AppColors.githubErrorLight,
         onPrimary: AppColors.white,
         onSecondary: AppColors.white,
         onSurface: AppColors.githubDarkText,
-        onBackground: AppColors.githubDarkText,
         onError: AppColors.white,
         brightness: Brightness.light,
       ),
@@ -52,13 +49,11 @@ class AppTheme {
       colorScheme: ColorScheme.dark(
         primary: AppColors.grey(600),
         secondary: AppColors.terminalGreen,
-        surface: AppColors.githubDarkSurface,
-        background: AppColors.githubDarkBg,
+        surface: AppColors.githubDarkBg,
         error: AppColors.githubErrorDark,
         onPrimary: AppColors.white,
         onSecondary: AppColors.githubDarkBg,
         onSurface: AppColors.githubLightText,
-        onBackground: AppColors.githubLightText,
         onError: AppColors.white,
         brightness: Brightness.dark,
       ),
@@ -86,7 +81,7 @@ class AppTheme {
           side: const BorderSide(color: AppColors.githubDarkBorder, width: 1),
         ),
       ),
-      dividerColor: AppColors.githubDarkBorder,
+      dividerTheme: const DividerThemeData(color: AppColors.githubDarkBorder),
     );
   }
 }

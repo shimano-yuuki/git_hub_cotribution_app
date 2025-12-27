@@ -10,8 +10,8 @@ class SettingsScreen extends StatelessWidget {
     final textColor = AppColors.textColor(brightness);
     final iconColor = AppColors.iconColor(brightness);
     final backgroundColor = brightness == Brightness.dark
-        ? AppColors.githubDarkSurface.withOpacity(0.9)
-        : AppColors.white.withOpacity(0.95);
+        ? AppColors.githubDarkSurface.withValues(alpha: 0.9)
+        : AppColors.white.withValues(alpha: 0.95);
 
     return Center(
       child: Container(

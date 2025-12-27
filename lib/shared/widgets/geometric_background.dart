@@ -61,7 +61,7 @@ class _GeometricPatternPainter extends CustomPainter {
   /// 網代模様: 斜めの平行線を複数方向に重ねる
   void _drawAjiroPattern(Canvas canvas, Size size) {
     final linePaint = Paint()
-      ..color = AppColors.terminalGreen.withOpacity(0.08)
+      ..color = AppColors.terminalGreen.withValues(alpha: 0.08)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
@@ -81,7 +81,7 @@ class _GeometricPatternPainter extends CustomPainter {
 
     // 左斜め下方向の平行線
     final leftLinePaint = Paint()
-      ..color = AppColors.terminalGreen.withOpacity(0.06)
+      ..color = AppColors.terminalGreen.withValues(alpha: 0.06)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.8;
 
