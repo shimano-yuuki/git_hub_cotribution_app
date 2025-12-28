@@ -15,10 +15,13 @@ class GeometricBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final isDark = brightness == Brightness.dark;
+
     return Stack(
       children: [
         CustomPaint(
-          painter: _GeometricPatternPainter(animate: animate),
+          painter: _GeometricPatternPainter(animate: animate, isDark: isDark),
           size: Size.infinite,
         ),
         child,
@@ -29,21 +32,31 @@ class GeometricBackground extends StatelessWidget {
 
 class _GeometricPatternPainter extends CustomPainter {
   final bool animate;
+  final bool isDark;
 
-  _GeometricPatternPainter({required this.animate});
+  _GeometricPatternPainter({required this.animate, required this.isDark});
 
   @override
   void paint(Canvas canvas, Size size) {
-    // グラデーション背景（薄くする）
+    // グラデーション背景（テーマに応じて変更）
     final gradient = LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
-      colors: [
-        AppColors.darkGrey, // ダークグレー
-        AppColors.darkGreenBlack, // 薄い緑がかったグレー
-        AppColors.darkGreen, // 薄い緑
-        AppColors.darkGrey, // ダークグレーに戻る
-      ],
+      colors: isDark
+          ? [
+              AppColors.darkGrey, // ダークグレー
+              AppColors.darkGreenBlack, // 薄い緑がかったグレー
+              AppColors.darkGreen, // 薄い緑
+              AppColors.darkGrey, // ダークグレーに戻る
+            ]
+          : [
+              AppColors.grey(200), // 明るいグレー
+              Color.lerp(AppColors.grey(100), Colors.red, 0.1) ??
+                  AppColors.grey(100), // 薄い赤がかったグレー
+              Color.lerp(AppColors.grey(50), Colors.red, 0.15) ??
+                  AppColors.grey(50), // より薄い赤がかった色
+              AppColors.grey(200), // 明るいグレーに戻る
+            ],
       stops: const [0.0, 0.4, 0.6, 1.0],
     );
 
@@ -61,9 +74,11 @@ class _GeometricPatternPainter extends CustomPainter {
   /// 網代模様: 斜めの平行線を複数方向に重ねる
   void _drawAjiroPattern(Canvas canvas, Size size) {
     final linePaint = Paint()
-      ..color = AppColors.terminalGreen.withValues(alpha: 0.08)
+      ..color = isDark
+          ? AppColors.terminalGreen.withValues(alpha: 0.25)
+          : AppColors.terminalGreen.withValues(alpha: 0.20)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
+      ..strokeWidth = 2.0;
 
     final spacing = 40.0;
     final diagonalLength = math.sqrt(
@@ -81,9 +96,11 @@ class _GeometricPatternPainter extends CustomPainter {
 
     // 左斜め下方向の平行線
     final leftLinePaint = Paint()
-      ..color = AppColors.terminalGreen.withValues(alpha: 0.06)
+      ..color = isDark
+          ? AppColors.terminalGreen.withValues(alpha: 0.20)
+          : AppColors.terminalGreen.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
+      ..strokeWidth = 2.0;
 
     for (double i = -diagonalLength; i < diagonalLength; i += spacing) {
       canvas.drawLine(
@@ -97,9 +114,11 @@ class _GeometricPatternPainter extends CustomPainter {
   /// 麻の葉模様: 六角形の中心から各頂点に向かって線を引く
   void _drawAsanohaPattern(Canvas canvas, Size size) {
     final asanohaPaint = Paint()
-      ..color = AppColors.terminalGreen.withValues(alpha: 0.1)
+      ..color = isDark
+          ? AppColors.terminalGreen.withValues(alpha: 0.30)
+          : AppColors.terminalGreen.withValues(alpha: 0.25)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 2.0;
 
     final hexSize = 80.0; // 六角形のサイズ
     final hexRadius = hexSize / 2;
@@ -143,5 +162,6 @@ class _GeometricPatternPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => animate;
+  bool shouldRepaint(covariant _GeometricPatternPainter oldDelegate) =>
+      animate || oldDelegate.isDark != isDark;
 }
