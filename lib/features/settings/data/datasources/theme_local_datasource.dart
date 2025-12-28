@@ -14,5 +14,3 @@ class ThemeLocalDataSource {
     return prefs.getString(_themeModeKey);
   }
 }
-
-

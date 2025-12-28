@@ -5,10 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 class ErrorMessageWidget extends StatelessWidget {
   final String message;
 
-  const ErrorMessageWidget({
-    super.key,
-    required this.message,
-  });
+  const ErrorMessageWidget({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +29,7 @@ class ErrorMessageWidget extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: TextStyle(
-                color: AppColors.githubErrorLight,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppColors.githubErrorLight, fontSize: 14),
             ),
           ),
         ],
@@ -43,4 +37,3 @@ class ErrorMessageWidget extends StatelessWidget {
     );
   }
 }
-
