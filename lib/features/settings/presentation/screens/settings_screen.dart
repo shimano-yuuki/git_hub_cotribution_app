@@ -19,6 +19,9 @@ import '../../data/repositories/theme_repository_impl.dart';
 import '../../domain/repositories/token_repository.dart';
 import '../../domain/repositories/theme_repository.dart';
 import '../../domain/entities/theme_mode.dart';
+import '../../../github_contribution/data/repositories/github_repository_impl.dart';
+import '../../../github_contribution/domain/repositories/github_repository.dart';
+import '../../../github_contribution/domain/usecases/validate_token_usecase.dart';
 
 class SettingsScreen extends HookWidget {
   const SettingsScreen({super.key});
@@ -34,9 +37,18 @@ class SettingsScreen extends HookWidget {
     );
     final getTokenUseCase = useMemoized(() => GetTokenUseCase(tokenRepository));
 
+    // GitHub API検証用の依存関係を構築
+    final githubRepository = useMemoized(
+      () => GithubRepositoryImpl() as GithubRepository,
+    );
+    final validateTokenUseCase = useMemoized(
+      () => ValidateTokenUseCase(githubRepository),
+    );
+
     final tokenState = useToken(
       saveTokenUseCase: saveTokenUseCase,
       getTokenUseCase: getTokenUseCase,
+      validateTokenUseCase: validateTokenUseCase,
     );
 
     // テーマ設定用の依存関係を構築

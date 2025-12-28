@@ -2,11 +2,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import '../../domain/entities/token.dart';
 import '../../domain/usecases/save_token_usecase.dart';
 import '../../domain/usecases/get_token_usecase.dart';
+import '../../../github_contribution/domain/usecases/validate_token_usecase.dart';
 
 /// トークン管理用のHook
 TokenState useToken({
   required SaveTokenUseCase saveTokenUseCase,
   required GetTokenUseCase getTokenUseCase,
+  ValidateTokenUseCase? validateTokenUseCase,
 }) {
   final token = useState<String>('');
   final isLoading = useState<bool>(false);
@@ -45,6 +47,24 @@ TokenState useToken({
 
     try {
       final tokenEntity = Token(token.value);
+
+      // GitHub APIでトークンを検証（validateTokenUseCaseが提供されている場合）
+      if (validateTokenUseCase != null) {
+        final validationResult = await validateTokenUseCase(token.value);
+        final isValid = validationResult.fold((failure) {
+          error.value = failure.message;
+          isSaved.value = false;
+          return false;
+        }, (isValid) => isValid);
+
+        // 検証に失敗した場合は早期リターン
+        if (!isValid) {
+          isLoading.value = false;
+          return;
+        }
+      }
+
+      // トークンを保存
       await saveTokenUseCase(tokenEntity);
       isSaved.value = true;
       error.value = null;
@@ -88,4 +108,3 @@ class TokenState {
     required this.saveToken,
   });
 }
-
