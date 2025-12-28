@@ -19,3 +19,4 @@ abstract class GithubRepository {
   Future<Either<Failure, bool>> validateToken(String token);
 }
 
+
