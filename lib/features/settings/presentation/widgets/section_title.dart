@@ -47,14 +47,10 @@ class SectionTitle extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             description!,
-            style: TextStyle(
-              fontSize: 12,
-              color: defaultTextColor,
-            ),
+            style: TextStyle(fontSize: 12, color: defaultTextColor),
           ),
         ],
       ],
     );
   }
 }
-

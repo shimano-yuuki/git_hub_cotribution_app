@@ -22,9 +22,7 @@ class SaveButton extends StatelessWidget {
         backgroundColor: AppColors.terminalGreen,
         foregroundColor: AppColors.githubDarkBg,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 0,
       ),
       child: isLoading
@@ -49,4 +47,3 @@ class SaveButton extends StatelessWidget {
     );
   }
 }
-

@@ -5,10 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 class SuccessMessageWidget extends StatelessWidget {
   final String message;
 
-  const SuccessMessageWidget({
-    super.key,
-    required this.message,
-  });
+  const SuccessMessageWidget({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -20,25 +17,16 @@ class SuccessMessageWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: textColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: textColor.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: textColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.check_circle_outline,
-            color: textColor,
-            size: 24,
-          ),
+          Icon(Icons.check_circle_outline, color: textColor, size: 24),
           const SizedBox(width: 16),
           Expanded(
             child: Text(
               message,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: textColor, fontSize: 14),
             ),
           ),
         ],
@@ -46,4 +34,3 @@ class SuccessMessageWidget extends StatelessWidget {
     );
   }
 }
-
