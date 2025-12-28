@@ -23,20 +23,36 @@ class MainNavigation extends HookWidget {
       };
     }, []);
 
+    final brightness = Theme.of(context).brightness;
+    final isDark = brightness == Brightness.dark;
+
+    // テーマに応じた色を設定
+    final barBackgroundColor = isDark
+        ? AppColors.githubDarkSurface
+        : AppColors.white;
+    final selectedIconColor = AppColors.terminalGreen;
+    final normalIconColor = isDark
+        ? AppColors.githubUnselectedDark
+        : AppColors.githubUnselectedLight;
+    final circleColor = isDark ? AppColors.githubDarkSurface : AppColors.white;
+    final labelColor = isDark
+        ? AppColors.githubLightText
+        : AppColors.githubDarkText;
+
     final tabItems = [
       TabItem(
         Icons.person,
         "Contribution",
-        AppColors.darkGreenBlack,
-        circleStrokeColor: AppColors.darkGreenBlack,
-        labelStyle: const TextStyle(color: AppColors.white),
+        circleColor,
+        circleStrokeColor: circleColor,
+        labelStyle: TextStyle(color: labelColor),
       ),
       TabItem(
         Icons.settings,
         "Settings",
-        AppColors.darkGreenBlack,
-        circleStrokeColor: AppColors.darkGreenBlack,
-        labelStyle: const TextStyle(color: AppColors.white),
+        circleColor,
+        circleStrokeColor: circleColor,
+        labelStyle: TextStyle(color: labelColor),
       ),
     ];
 
@@ -44,16 +60,15 @@ class MainNavigation extends HookWidget {
 
     return Scaffold(
       extendBody: true,
-      appBar: AppBar(title: const Text('GitHub Contribution App')),
       body: GeometricBackground(child: screens[selectedPos.value]),
       bottomNavigationBar: CircularBottomNavigation(
         tabItems,
         controller: navigationController,
         selectedPos: selectedPos.value,
         barHeight: 80.0,
-        barBackgroundColor: AppColors.darkGrey,
-        selectedIconColor: AppColors.white,
-        normalIconColor: AppColors.grey(400),
+        barBackgroundColor: barBackgroundColor,
+        selectedIconColor: selectedIconColor,
+        normalIconColor: normalIconColor,
         animationDuration: const Duration(milliseconds: 300),
         selectedCallback: (int? selectedPosValue) {
           selectedPos.value = selectedPosValue ?? 0;
