@@ -43,6 +43,9 @@ dependencies:
   
   # Circular Bottom Navigation
   circular_bottom_navigation: ^2.4.0
+  
+  # Local Storage
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
