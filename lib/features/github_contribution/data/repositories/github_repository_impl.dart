@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/entities/contribution.dart';
 import '../../domain/repositories/github_repository.dart';
 import '../datasources/github_remote_datasource.dart';
 
@@ -9,7 +10,7 @@ class GithubRepositoryImpl implements GithubRepository {
   final GithubRemoteDataSource remoteDataSource;
 
   GithubRepositoryImpl({GithubRemoteDataSource? remoteDataSource})
-      : remoteDataSource = remoteDataSource ?? GithubRemoteDataSource();
+    : remoteDataSource = remoteDataSource ?? GithubRemoteDataSource();
 
   @override
   Future<Either<Failure, User>> getAuthenticatedUser(String token) async {
@@ -18,9 +19,8 @@ class GithubRepositoryImpl implements GithubRepository {
       return Right(user);
     } catch (e) {
       final errorMessage = e.toString().replaceAll('Exception: ', '');
-      
-      if (errorMessage.contains('認証に失敗') ||
-          errorMessage.contains('トークンが無効')) {
+
+      if (errorMessage.contains('認証に失敗') || errorMessage.contains('トークンが無効')) {
         return Left(AuthenticationFailure(errorMessage));
       } else if (errorMessage.contains('ネットワーク') ||
           errorMessage.contains('接続')) {
@@ -42,8 +42,32 @@ class GithubRepositoryImpl implements GithubRepository {
       }
     } catch (e) {
       final errorMessage = e.toString().replaceAll('Exception: ', '');
-      
-      if (errorMessage.contains('ネットワーク') ||
+
+      if (errorMessage.contains('ネットワーク') || errorMessage.contains('接続')) {
+        return Left(NetworkFailure(errorMessage));
+      } else {
+        return Left(ServerFailure(errorMessage));
+      }
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Contribution>>> getContributions(
+    String token,
+    int year,
+  ) async {
+    try {
+      final contributions = await remoteDataSource.getContributions(
+        token,
+        year,
+      );
+      return Right(contributions);
+    } catch (e) {
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      if (errorMessage.contains('認証に失敗') || errorMessage.contains('トークンが無効')) {
+        return Left(AuthenticationFailure(errorMessage));
+      } else if (errorMessage.contains('ネットワーク') ||
           errorMessage.contains('接続')) {
         return Left(NetworkFailure(errorMessage));
       } else {
@@ -52,4 +76,3 @@ class GithubRepositoryImpl implements GithubRepository {
     }
   }
 }
-

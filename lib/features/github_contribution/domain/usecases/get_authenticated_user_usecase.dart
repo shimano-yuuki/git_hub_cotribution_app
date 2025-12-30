@@ -10,9 +10,9 @@ class GetAuthenticatedUserUseCase {
   GetAuthenticatedUserUseCase(this.repository);
 
   /// 認証されたユーザー情報を取得する
-  /// 
+  ///
   /// [token] GitHub Personal Access Token
-  /// 
+  ///
   /// Returns [Either<Failure, User>]
   Future<Either<Failure, User>> call(String token) async {
     if (token.isEmpty) {
@@ -21,5 +21,3 @@ class GetAuthenticatedUserUseCase {
     return await repository.getAuthenticatedUser(token);
   }
 }
-
-
