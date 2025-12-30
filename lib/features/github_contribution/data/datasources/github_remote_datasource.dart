@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../../domain/entities/user.dart';
+import '../../domain/entities/contribution.dart';
 import '../models/user_model.dart';
 
 /// GitHub APIへのリモートアクセスを管理するDataSource
@@ -21,10 +22,11 @@ class GithubRemoteDataSource {
     try {
       _setAuthHeader(token);
       final response = await _dio.get('$_baseUrl/user');
-      
+
       if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data as Map<String, dynamic>)
-            .toEntity();
+        return UserModel.fromJson(
+          response.data as Map<String, dynamic>,
+        ).toEntity();
       } else {
         throw Exception('ユーザー情報の取得に失敗しました');
       }
@@ -63,6 +65,118 @@ class GithubRemoteDataSource {
       return false;
     }
   }
+
+  /// Contributionデータを取得する（GraphQL APIを使用）
+  Future<List<Contribution>> getContributions(String token, int year) async {
+    try {
+      // GraphQL APIのエンドポイント
+      const graphqlUrl = 'https://api.github.com/graphql';
+
+      // GraphQL API用の認証ヘッダー（Bearerトークンを使用）
+      _dio.options.headers['Authorization'] = 'Bearer $token';
+      _dio.options.headers['Accept'] = 'application/vnd.github.v3+json';
+
+      // 開始日と終了日を計算（ISO 8601形式）
+      final startDate = DateTime(year, 1, 1);
+      final endDate = DateTime(year, 12, 31);
+      final today = DateTime.now();
+      final actualEndDate = endDate.isAfter(today) ? today : endDate;
+
+      // ISO 8601形式に変換
+      final startDateStr = startDate.toUtc().toIso8601String();
+      final endDateStr = actualEndDate.toUtc().toIso8601String();
+
+      // GraphQLクエリ
+      final query =
+          '''
+        query {
+          viewer {
+            contributionsCollection(from: "$startDateStr", to: "$endDateStr") {
+              contributionCalendar {
+                totalContributions
+                weeks {
+                  contributionDays {
+                    date
+                    contributionCount
+                  }
+                }
+              }
+            }
+          }
+        }
+      ''';
+
+      final response = await _dio.post(graphqlUrl, data: {'query': query});
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        if (data == null || data['viewer'] == null) {
+          throw Exception('Contributionデータの取得に失敗しました');
+        }
+
+        final contributionsCollection =
+            data['viewer']['contributionsCollection'];
+        if (contributionsCollection == null) {
+          throw Exception('Contributionデータの取得に失敗しました');
+        }
+
+        final contributionCalendar =
+            contributionsCollection['contributionCalendar'];
+        if (contributionCalendar == null) {
+          throw Exception('Contributionデータの取得に失敗しました');
+        }
+
+        final weeks = contributionCalendar['weeks'] as List<dynamic>?;
+        if (weeks == null) {
+          return [];
+        }
+
+        final contributions = <Contribution>[];
+        for (final week in weeks) {
+          final contributionDays = week['contributionDays'] as List<dynamic>?;
+          if (contributionDays == null) continue;
+
+          for (final day in contributionDays) {
+            final dateStr = day['date'] as String;
+            final count = day['contributionCount'] as int? ?? 0;
+
+            // 日付文字列をDateTimeに変換（YYYY-MM-DD形式）
+            final dateParts = dateStr.split('-');
+            if (dateParts.length == 3) {
+              final date = DateTime(
+                int.parse(dateParts[0]),
+                int.parse(dateParts[1]),
+                int.parse(dateParts[2]),
+              );
+              contributions.add(Contribution(date: date, count: count));
+            }
+          }
+        }
+
+        return contributions;
+      } else {
+        throw Exception('Contributionデータの取得に失敗しました');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw Exception('認証に失敗しました。トークンが無効です。');
+      } else if (e.response?.statusCode == 403) {
+        throw Exception('アクセスが拒否されました。トークンの権限を確認してください。');
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw Exception('接続がタイムアウトしました。ネットワーク接続を確認してください。');
+      } else if (e.type == DioExceptionType.connectionError) {
+        throw Exception('ネットワークエラーが発生しました。インターネット接続を確認してください。');
+      } else {
+        final errorMessage =
+            e.response?.data?['errors']?[0]?['message'] as String?;
+        throw Exception(
+          errorMessage ?? 'Contributionデータの取得に失敗しました: ${e.message}',
+        );
+      }
+    } catch (e) {
+      throw Exception('予期しないエラーが発生しました: $e');
+    }
+  }
 }
-
-

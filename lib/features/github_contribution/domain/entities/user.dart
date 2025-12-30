@@ -41,5 +41,3 @@ class User {
       followers.hashCode ^
       following.hashCode;
 }
-
-

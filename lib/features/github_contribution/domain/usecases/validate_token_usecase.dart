@@ -9,9 +9,9 @@ class ValidateTokenUseCase {
   ValidateTokenUseCase(this.repository);
 
   /// トークンの有効性を検証する
-  /// 
+  ///
   /// [token] GitHub Personal Access Token
-  /// 
+  ///
   /// Returns [Either<Failure, bool>] true if valid, false otherwise
   Future<Either<Failure, bool>> call(String token) async {
     if (token.isEmpty) {
@@ -20,5 +20,3 @@ class ValidateTokenUseCase {
     return await repository.validateToken(token);
   }
 }
-
-
