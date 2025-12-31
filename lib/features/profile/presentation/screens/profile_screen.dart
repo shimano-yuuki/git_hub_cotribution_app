@@ -94,6 +94,7 @@ class ProfileScreen extends HookWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: 16),
                 Text(
                   'Contribution Calendar',
                   style: TextStyle(
@@ -138,6 +139,7 @@ class ProfileScreen extends HookWidget {
                 const SizedBox(height: 16),
                 // 凡例
                 _buildLegend(brightness, textColor),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -152,7 +154,10 @@ class ProfileScreen extends HookWidget {
       children: [
         Text(
           'Less',
-          style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.6)),
+          style: TextStyle(
+            fontSize: 12,
+            color: textColor.withValues(alpha: 0.6),
+          ),
         ),
         const SizedBox(width: 4),
         ...List.generate(5, (index) {
@@ -173,7 +178,10 @@ class ProfileScreen extends HookWidget {
         const SizedBox(width: 4),
         Text(
           'More',
-          style: TextStyle(fontSize: 12, color: textColor.withOpacity(0.6)),
+          style: TextStyle(
+            fontSize: 12,
+            color: textColor.withValues(alpha: 0.6),
+          ),
         ),
       ],
     );
@@ -183,7 +191,7 @@ class ProfileScreen extends HookWidget {
   Color _getLegendColor(int count, Brightness brightness) {
     if (brightness == Brightness.dark) {
       if (count == 0) {
-        return Colors.grey; // グレー
+        return AppColors.githubDarkBorder.withValues(alpha: 0.3); // グレー
       } else if (count <= 3) {
         return const Color(0xFF0E4429);
       } else if (count <= 9) {
@@ -195,7 +203,7 @@ class ProfileScreen extends HookWidget {
       }
     } else {
       if (count == 0) {
-        return Colors.grey; // グレー
+        return AppColors.githubDarkBorder.withValues(alpha: 0.3);
       } else if (count <= 3) {
         return const Color(0xFF9BE9A8);
       } else if (count <= 9) {
