@@ -17,6 +17,11 @@ class ProfileScreen extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('');
+    debugPrint('🏠🏠🏠 ProfileScreen.build() called 🏠🏠🏠');
+    debugPrint('📅 Current time: ${DateTime.now()}');
+    debugPrint('');
+
     final brightness = Theme.of(context).brightness;
     final textColor = AppColors.textColor(brightness);
 
@@ -41,16 +46,67 @@ class ProfileScreen extends HookWidget {
 
     // 初期化時にContributionデータを取得
     useEffect(() {
+      debugPrint('');
+      debugPrint('🚀🚀🚀 ===== useEffect TRIGGERED ===== 🚀🚀🚀');
+      debugPrint('📅 Current time: ${DateTime.now()}');
+      debugPrint('📅 Selected year: ${selectedYear.value}');
+      debugPrint(
+        '🔄 This useEffect runs when selectedYear changes or on mount',
+      );
+      debugPrint('');
+
       Future.microtask(() async {
+        debugPrint('💫 Future.microtask started');
+        debugPrint('');
         isLoading.value = true;
         error.value = null;
 
         try {
           // 保存されているトークンを取得
+          debugPrint('🔑 Checking for saved token...');
           final token = await getTokenUseCase();
           if (token == null || token.value.isEmpty) {
+            debugPrint('');
+            debugPrint('🔑 No token found, using MOCK data');
             // トークンが保存されていない場合はモックデータを使用
-            contributions.value = _generateMockContributions();
+            final mockData = _generateMockContributions();
+
+            // 今日のデータが含まれているか確認
+            final today = DateTime.now();
+            final todayNormalized = DateTime(
+              today.year,
+              today.month,
+              today.day,
+            );
+            final hasTodayData = mockData.any((c) {
+              final cDate = DateTime(c.date.year, c.date.month, c.date.day);
+              return cDate == todayNormalized;
+            });
+
+            debugPrint('');
+            debugPrint('🔍 Checking for today\'s data in MOCK:');
+            debugPrint('   Today: $todayNormalized');
+            debugPrint('   Has today\'s data: $hasTodayData');
+
+            if (!hasTodayData) {
+              debugPrint('⚠️ Today\'s data missing in mock! Adding it...');
+              final random = math.Random();
+              final todayCount = 5 + random.nextInt(11);
+              mockData.insert(
+                0,
+                Contribution(date: todayNormalized, count: todayCount),
+              );
+              debugPrint('✅ Added today\'s data with count: $todayCount');
+            }
+
+            contributions.value = mockData;
+            debugPrint('');
+            debugPrint('📤 Setting contributions.value (MOCK):');
+            debugPrint('   Total: ${contributions.value.length}');
+            debugPrint(
+              '   First: ${contributions.value.first.date} (${contributions.value.first.count})',
+            );
+            debugPrint('');
             isLoading.value = false;
             return;
           }
@@ -62,23 +118,126 @@ class ProfileScreen extends HookWidget {
           );
           result.fold(
             (failure) {
+              debugPrint('');
+              debugPrint('❌ API call failed: ${failure.message}');
               error.value = failure.message;
               // エラー時はモックデータを使用
-              contributions.value = _generateMockContributions();
+              final mockData = _generateMockContributions();
+
+              // 今日のデータが含まれているか確認
+              final today = DateTime.now();
+              final todayNormalized = DateTime(
+                today.year,
+                today.month,
+                today.day,
+              );
+              final hasTodayData = mockData.any((c) {
+                final cDate = DateTime(c.date.year, c.date.month, c.date.day);
+                return cDate == todayNormalized;
+              });
+
+              if (!hasTodayData) {
+                debugPrint('⚠️ Today\'s data missing! Adding it...');
+                final random = math.Random();
+                final todayCount = 5 + random.nextInt(11);
+                mockData.insert(
+                  0,
+                  Contribution(date: todayNormalized, count: todayCount),
+                );
+                debugPrint('✅ Added today\'s data with count: $todayCount');
+              }
+
+              contributions.value = mockData;
+              debugPrint('📤 Setting contributions.value (MOCK after error):');
+              debugPrint('   Total: ${contributions.value.length}');
+              debugPrint('');
             },
             (data) {
-              contributions.value = data;
+              debugPrint('');
+              debugPrint('✅ API call successful!');
+              debugPrint('📤 Received data from API:');
+              debugPrint('   Total: ${data.length}');
+              if (data.isNotEmpty) {
+                debugPrint(
+                  '   First: ${data.first.date} (${data.first.count})',
+                );
+                debugPrint('   Last: ${data.last.date} (${data.last.count})');
+              }
+
+              // 今日のデータが含まれているか確認
+              final today = DateTime.now();
+              final todayNormalized = DateTime(
+                today.year,
+                today.month,
+                today.day,
+              );
+              final hasTodayData = data.any((c) {
+                final cDate = DateTime(c.date.year, c.date.month, c.date.day);
+                return cDate == todayNormalized;
+              });
+
+              debugPrint('');
+              debugPrint('🔍 Checking for today\'s data in API response:');
+              debugPrint('   Today: $todayNormalized');
+              debugPrint('   Has today\'s data: $hasTodayData');
+
+              if (!hasTodayData) {
+                debugPrint('⚠️ Today\'s data missing! Adding it manually...');
+                final modifiedData = [
+                  ...data,
+                  Contribution(date: todayNormalized, count: 0),
+                ];
+                debugPrint('✅ Added today\'s data with count: 0');
+                contributions.value = modifiedData;
+              } else {
+                contributions.value = data;
+              }
+              debugPrint('');
               error.value = null;
             },
           );
         } catch (e) {
+          debugPrint('');
+          debugPrint('❌ Exception occurred: $e');
           error.value = 'Contributionデータの取得に失敗しました: $e';
           // エラー時はモックデータを使用
-          contributions.value = _generateMockContributions();
+          final mockData = _generateMockContributions();
+
+          // 今日のデータが含まれているか確認
+          final today = DateTime.now();
+          final todayNormalized = DateTime(today.year, today.month, today.day);
+          final hasTodayData = mockData.any((c) {
+            final cDate = DateTime(c.date.year, c.date.month, c.date.day);
+            return cDate == todayNormalized;
+          });
+
+          if (!hasTodayData) {
+            debugPrint('⚠️ Today\'s data missing! Adding it...');
+            final random = math.Random();
+            final todayCount = 5 + random.nextInt(11);
+            mockData.insert(
+              0,
+              Contribution(date: todayNormalized, count: todayCount),
+            );
+            debugPrint('✅ Added today\'s data with count: $todayCount');
+          }
+
+          contributions.value = mockData;
+          debugPrint('📤 Setting contributions.value (MOCK after exception):');
+          debugPrint('   Total: ${contributions.value.length}');
+          debugPrint('');
         } finally {
           isLoading.value = false;
+          debugPrint('');
+          debugPrint('💫 Future.microtask completed');
+          debugPrint('🚀🚀🚀 ===== useEffect COMPLETED ===== 🚀🚀🚀');
+          debugPrint('');
         }
       });
+
+      debugPrint('');
+      debugPrint('⚡ useEffect setup function completed (async work scheduled)');
+      debugPrint('');
       return null;
     }, [selectedYear.value]);
 
@@ -87,7 +246,7 @@ class ProfileScreen extends HookWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 64),
+          const SizedBox(height: 24),
           // Contributionカレンダーセクション
           GlassContainer(
             padding: const EdgeInsets.all(24),
@@ -123,97 +282,74 @@ class ProfileScreen extends HookWidget {
                   )
                 else
                   // カレンダーウィジェット
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minHeight: 200,
-                      maxHeight: 400,
-                    ),
-                    child: ContributionCalendarWidget(
-                      contributions: contributions.value,
-                      initialYear: selectedYear.value,
-                      onYearChanged: (newYear) {
-                        selectedYear.value = newYear;
-                      },
-                    ),
+                  Builder(
+                    builder: (context) {
+                      debugPrint('');
+                      debugPrint(
+                        '🎨🎨🎨 ===== PASSING DATA TO CALENDAR WIDGET ===== 🎨🎨🎨',
+                      );
+                      debugPrint(
+                        '📊 Contributions count: ${contributions.value.length}',
+                      );
+                      if (contributions.value.isNotEmpty) {
+                        debugPrint(
+                          '📅 First: ${contributions.value.first.date} (${contributions.value.first.count})',
+                        );
+                        debugPrint(
+                          '📅 Last: ${contributions.value.last.date} (${contributions.value.last.count})',
+                        );
+
+                        // 今日の日付があるか確認
+                        final today = DateTime.now();
+                        final todayNormalized = DateTime(
+                          today.year,
+                          today.month,
+                          today.day,
+                        );
+                        final todayData = contributions.value.where((c) {
+                          final cDate = DateTime(
+                            c.date.year,
+                            c.date.month,
+                            c.date.day,
+                          );
+                          return cDate == todayNormalized;
+                        }).toList();
+
+                        if (todayData.isNotEmpty) {
+                          debugPrint(
+                            '✅ Today\'s data EXISTS in contributions.value:',
+                          );
+                          debugPrint('   Date: ${todayData.first.date}');
+                          debugPrint('   Count: ${todayData.first.count}');
+                        } else {
+                          debugPrint(
+                            '❌ Today\'s data NOT FOUND in contributions.value!',
+                          );
+                          debugPrint('   Looking for: $todayNormalized');
+                        }
+                      }
+                      debugPrint(
+                        '🎨🎨🎨 ===== PASSING COMPLETE ===== 🎨🎨🎨',
+                      );
+                      debugPrint('');
+
+                      return ContributionCalendarWidget(
+                        contributions: contributions.value,
+                        initialYear: selectedYear.value,
+                        onYearChanged: (newYear) {
+                          selectedYear.value = newYear;
+                        },
+                      );
+                    },
                   ),
-                const SizedBox(height: 16),
-                // 凡例
-                _buildLegend(brightness, textColor),
                 const SizedBox(height: 16),
               ],
             ),
           ),
+          const SizedBox(height: 64),
         ],
       ),
     );
-  }
-
-  /// 凡例を構築
-  Widget _buildLegend(Brightness brightness, Color textColor) {
-    return Row(
-      children: [
-        Text(
-          'Less',
-          style: TextStyle(
-            fontSize: 12,
-            color: textColor.withValues(alpha: 0.6),
-          ),
-        ),
-        const SizedBox(width: 4),
-        ...List.generate(5, (index) {
-          final count = index * 5;
-          final color = _getLegendColor(count, brightness);
-          return Padding(
-            padding: const EdgeInsets.only(left: 2, right: 2),
-            child: Container(
-              width: 11,
-              height: 11,
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          );
-        }),
-        const SizedBox(width: 4),
-        Text(
-          'More',
-          style: TextStyle(
-            fontSize: 12,
-            color: textColor.withValues(alpha: 0.6),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 凡例用の色を取得
-  Color _getLegendColor(int count, Brightness brightness) {
-    if (brightness == Brightness.dark) {
-      if (count == 0) {
-        return AppColors.githubDarkBorder.withValues(alpha: 0.3); // グレー
-      } else if (count <= 3) {
-        return const Color(0xFF0E4429);
-      } else if (count <= 9) {
-        return const Color(0xFF006D32);
-      } else if (count <= 19) {
-        return const Color(0xFF26A641);
-      } else {
-        return const Color(0xFF39D353);
-      }
-    } else {
-      if (count == 0) {
-        return AppColors.githubDarkBorder.withValues(alpha: 0.3);
-      } else if (count <= 3) {
-        return const Color(0xFF9BE9A8);
-      } else if (count <= 9) {
-        return const Color(0xFF40C463);
-      } else if (count <= 19) {
-        return const Color(0xFF30A14E);
-      } else {
-        return const Color(0xFF216E39);
-      }
-    }
   }
 
   /// モックContributionデータを生成（テスト用）
@@ -222,14 +358,51 @@ class ProfileScreen extends HookWidget {
     final today = DateTime.now();
     final random = math.Random();
 
+    debugPrint('');
+    debugPrint('🏗️🏗️🏗️ ===== GENERATING MOCK DATA ===== 🏗️🏗️🏗️');
+    debugPrint('📅 Current time: $today');
+    debugPrint('');
+
     // 過去1年間のデータを生成
     for (int i = 0; i < 365; i++) {
       final date = today.subtract(Duration(days: i));
-      // ランダムにContribution数を生成（0-25の範囲、ただし0の確率を高くする）
-      final count = random.nextInt(100) < 60 ? 0 : random.nextInt(25);
+      // 日付を正規化（時刻情報を削除して00:00:00.000にする）
+      final normalizedDate = DateTime(date.year, date.month, date.day);
 
-      contributions.add(Contribution(date: date, count: count));
+      // 今日は確実にContributionがあるようにする
+      int count;
+      if (i == 0) {
+        // 今日は5〜15のランダムな値
+        count = 5 + random.nextInt(11);
+        debugPrint('📝📝📝 Generated mock data for TODAY:');
+        debugPrint('   Original date: $date');
+        debugPrint('   Normalized date: $normalizedDate');
+        debugPrint('   Count: $count contributions');
+        debugPrint('   Index in list: $i (first item)');
+      } else if (i < 3) {
+        // 最初の数件もログ出力
+        count = random.nextInt(100) < 60 ? 0 : random.nextInt(25);
+        debugPrint('📝 Generated mock data for day $i:');
+        debugPrint('   Normalized date: $normalizedDate');
+        debugPrint('   Count: $count contributions');
+      } else {
+        // その他の日はランダム（0-25の範囲、ただし0の確率を高くする）
+        count = random.nextInt(100) < 60 ? 0 : random.nextInt(25);
+      }
+
+      contributions.add(Contribution(date: normalizedDate, count: count));
     }
+
+    debugPrint('');
+    debugPrint('✅ Generated ${contributions.length} mock contributions');
+    debugPrint(
+      '📋 First contribution: ${contributions.first.date} (${contributions.first.count})',
+    );
+    debugPrint(
+      '📋 Last contribution: ${contributions.last.date} (${contributions.last.count})',
+    );
+    debugPrint('🏗️🏗️🏗️ ===== MOCK DATA GENERATION COMPLETE ===== 🏗️🏗️🏗️');
+    debugPrint('');
 
     return contributions;
   }
