@@ -35,7 +35,6 @@ class ContributionDetailContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _buildDateNavigationButton(
-                context: context,
                 icon: Icons.chevron_left,
                 onPressed: onPreviousDay,
                 brightness: brightness,
@@ -55,7 +54,6 @@ class ContributionDetailContent extends StatelessWidget {
                 ),
               ),
               _buildDateNavigationButton(
-                context: context,
                 icon: Icons.chevron_right,
                 onPressed: onNextDay,
                 brightness: brightness,
@@ -157,19 +155,17 @@ class ContributionDetailContent extends StatelessWidget {
           const SizedBox(height: 16),
 
           // 統計情報
-          if (count > 0) ...[
-            Text(
-              '活動レベル',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textColor(brightness).withValues(alpha: 0.7),
-              ),
+          Text(
+            '活動レベル',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textColor(brightness).withValues(alpha: 0.7),
             ),
-            const SizedBox(height: 12),
-            _buildActivityBar(brightness),
-            const SizedBox(height: 16),
-          ],
+          ),
+          const SizedBox(height: 12),
+          _buildActivityBar(count, brightness),
+          const SizedBox(height: 16),
 
           // 閉じるボタン（モーダルのみ）
           if (showCloseButton)
@@ -239,7 +235,7 @@ class ContributionDetailContent extends StatelessWidget {
   }
 
   /// 活動レベルバーを構築
-  Widget _buildActivityBar(Brightness brightness) {
+  Widget _buildActivityBar(int contributionCount, Brightness brightness) {
     final levels = [
       {'label': '低', 'min': 0, 'max': 3},
       {'label': '中', 'min': 4, 'max': 9},
@@ -251,7 +247,7 @@ class ContributionDetailContent extends StatelessWidget {
     for (int i = 0; i < levels.length; i++) {
       final min = levels[i]['min'] as int;
       final max = levels[i]['max'] as int;
-      if (count >= min && count <= max) {
+      if (contributionCount >= min && contributionCount <= max) {
         activeIndex = i;
         break;
       }
@@ -259,7 +255,7 @@ class ContributionDetailContent extends StatelessWidget {
 
     return Row(
       children: List.generate(4, (index) {
-        final isActive = index <= activeIndex && count > 0;
+        final isActive = index <= activeIndex && contributionCount > 0;
         return Expanded(
           child: Padding(
             padding: EdgeInsets.only(right: index < 3 ? 8 : 0),
@@ -300,7 +296,6 @@ class ContributionDetailContent extends StatelessWidget {
 
   /// 日付ナビゲーションボタンを構築
   Widget _buildDateNavigationButton({
-    required BuildContext context,
     required IconData icon,
     required VoidCallback? onPressed,
     required Brightness brightness,
