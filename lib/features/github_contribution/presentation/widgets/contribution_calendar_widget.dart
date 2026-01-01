@@ -3,7 +3,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/contribution.dart';
 import 'contribution_detail_modal.dart';
 import 'contribution_detail_content.dart';
-import 'dart:math' as math;
 
 class ContributionCalendarWidget extends StatefulWidget {
   final List<Contribution> contributions;
@@ -54,8 +53,6 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
   /// 今日の日付を選択状態に初期化
   void _initializeSelectedCell() {
     if (widget.contributions.isEmpty) {
-      // データがまだ読み込まれていない場合は何もしない
-      debugPrint('⚠️ Contributions list is empty');
       return;
     }
 
@@ -64,93 +61,15 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
 
     // 今日のContribution数を取得
     int todayCount = 0;
-    bool found = false;
-
-    debugPrint('');
-    debugPrint('🔍🔍🔍 ===== INVESTIGATING TODAY\'S CONTRIBUTION ===== 🔍🔍🔍');
-    debugPrint('📅 Current time: $today');
-    debugPrint('📅 Today normalized: $todayNormalized');
-    debugPrint('📊 Total contributions: ${widget.contributions.length}');
-
-    // データの日付範囲を確認
-    if (widget.contributions.isNotEmpty) {
-      final allDates = widget.contributions.map((c) => c.date).toList();
-      allDates.sort((a, b) => a.compareTo(b));
-      debugPrint('📅 Date range in data:');
-      debugPrint('   Min: ${allDates.first}');
-      debugPrint('   Max: ${allDates.last}');
-      debugPrint('   Expected today: $todayNormalized');
-      debugPrint(
-        '   Today is after max? ${todayNormalized.isAfter(allDates.last)}',
-      );
-    }
-    debugPrint('');
-
-    // 最初の5件のデータを表示
-    debugPrint('📅 First 5 dates in data:');
-    for (int i = 0; i < math.min(5, widget.contributions.length); i++) {
-      final c = widget.contributions[i];
-      final normalized = DateTime(c.date.year, c.date.month, c.date.day);
-      debugPrint(
-        '  [$i] Original: ${c.date} | Normalized: $normalized | Count: ${c.count}',
-      );
-    }
-
-    // 最後の5件のデータを表示
-    debugPrint('');
-    debugPrint('📅 Last 5 dates in data:');
-    final startIdx = math.max(0, widget.contributions.length - 5);
-    for (int i = startIdx; i < widget.contributions.length; i++) {
-      final c = widget.contributions[i];
-      final normalized = DateTime(c.date.year, c.date.month, c.date.day);
-      debugPrint(
-        '  [$i] Original: ${c.date} | Normalized: $normalized | Count: ${c.count}',
-      );
-    }
-
-    debugPrint('');
-    debugPrint('🔎 Searching for today ($todayNormalized)...');
-
-    int checkCount = 0;
     for (final c in widget.contributions) {
       final cDate = DateTime(c.date.year, c.date.month, c.date.day);
-
-      // 今日に近い日付をログ出力（前後2日）
-      final daysDiff = todayNormalized.difference(cDate).inDays.abs();
-      if (daysDiff <= 2) {
-        debugPrint(
-          '  Nearby date: ${c.date} (normalized: $cDate) | Count: ${c.count} | Days diff: $daysDiff',
-        );
-      }
-
-      // デバッグ: 日付を出力
       if (cDate.year == todayNormalized.year &&
           cDate.month == todayNormalized.month &&
           cDate.day == todayNormalized.day) {
         todayCount = c.count;
-        found = true;
-        debugPrint('');
-        debugPrint('✅✅✅ FOUND TODAY\'S CONTRIBUTION! ✅✅✅');
-        debugPrint('   Original date: ${c.date}');
-        debugPrint('   Normalized date: $cDate');
-        debugPrint('   Count: $todayCount');
         break;
       }
-      checkCount++;
     }
-
-    debugPrint('');
-    if (!found) {
-      debugPrint('❌❌❌ TODAY\'S CONTRIBUTION NOT FOUND! ❌❌❌');
-      debugPrint('   Looking for: $todayNormalized');
-      debugPrint('   Checked ${checkCount} items');
-    }
-
-    debugPrint('');
-    debugPrint('📝 Creating _selectedCell:');
-    debugPrint('   Date: $todayNormalized');
-    debugPrint('   Count: $todayCount');
-    debugPrint('   isEmpty: false');
 
     setState(() {
       _selectedCell = CalendarCell(
@@ -159,9 +78,6 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
         isEmpty: false,
       );
     });
-
-    debugPrint('🔍🔍🔍 ===== INVESTIGATION COMPLETE ===== 🔍🔍🔍');
-    debugPrint('');
   }
 
   @override
@@ -197,10 +113,10 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
     final weekStartSunday = yearStartWeekday == 7
         ? yearStart
         : yearStart.subtract(Duration(days: yearStartWeekday));
-    
+
     // 表示開始日は週の日曜日（前年にある場合も含む）
     final displayStartDate = weekStartSunday;
-    
+
     // 今日の終わり（23:59:59）まで含める
     final todayEnd = DateTime(today.year, today.month, today.day, 23, 59, 59);
     final yearEnd = DateTime(_selectedYear, 12, 31, 23, 59, 59);
@@ -241,7 +157,7 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                        '$total contributions',
+                      '$total contributions',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textColor(
@@ -251,109 +167,110 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
                     ),
                   ],
                 ),
-                  // 年選択ボタン
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.chevron_left,
-                          color: AppColors.textColor(brightness),
-                        ),
-                        onPressed: _selectedYear > availableYears.last
-                            ? () {
-                                setState(() {
-                                  _selectedYear--;
-                                  _hasScrolled = false;
-                                });
-                                widget.onYearChanged?.call(_selectedYear);
-                                _scrollToEnd();
-                              }
-                            : null,
+                // 年選択ボタン
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.chevron_left,
+                        color: AppColors.textColor(brightness),
                       ),
-                      Text(
-                        '$_selectedYear年',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor(brightness),
-                        ),
+                      onPressed: _selectedYear > availableYears.last
+                          ? () {
+                              setState(() {
+                                _selectedYear--;
+                                _hasScrolled = false;
+                              });
+                              widget.onYearChanged?.call(_selectedYear);
+                              _scrollToEnd();
+                            }
+                          : null,
+                    ),
+                    Text(
+                      '$_selectedYear年',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor(brightness),
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.chevron_right,
-                          color: AppColors.textColor(brightness),
-                        ),
-                        onPressed: _selectedYear < availableYears.first
-                            ? () {
-                      setState(() {
-                                  _selectedYear++;
-                                  _hasScrolled = false;
-                      });
-                                widget.onYearChanged?.call(_selectedYear);
-                      _scrollToEnd();
-                    }
-                            : null,
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.chevron_right,
+                        color: AppColors.textColor(brightness),
                       ),
-                    ],
+                      onPressed: _selectedYear < availableYears.first
+                          ? () {
+                              setState(() {
+                                _selectedYear++;
+                                _hasScrolled = false;
+                              });
+                              widget.onYearChanged?.call(_selectedYear);
+                              _scrollToEnd();
+                            }
+                          : null,
+                    ),
+                  ],
                 ),
               ],
             ),
             const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 16,
-                ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
               decoration: BoxDecoration(
                 color: brightness == Brightness.dark
-                    ? AppColors.githubDarkSurface.withOpacity(0.85)
-                    : AppColors.white.withOpacity(0.9),
+                    ? AppColors.githubDarkSurface.withValues(alpha: 0.85)
+                    : AppColors.white.withValues(alpha: 0.9),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: AppColors.borderColor(brightness),
                   width: 1,
                 ),
               ),
-                child: SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const ClampingScrollPhysics(),
-                  controller: _scrollController,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: weeks.map((week) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: week.map((cell) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    right: widget.cellSpacing,
-                    bottom: widget.cellSpacing,
-                  ),
-                  child: _buildCell(cell, cellSize, brightness),
-                );
-              }).toList(),
-            );
-          }).toList(),
-        ),
-      ),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const ClampingScrollPhysics(),
+                controller: _scrollController,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: weeks.map((week) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: week.map((cell) {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            right: widget.cellSpacing,
+                            bottom: widget.cellSpacing,
+                          ),
+                          child: _buildCell(cell, cellSize, brightness),
+                        );
+                      }).toList(),
+                    );
+                  }).toList(),
+                ),
               ),
+            ),
 
-              // 凡例
-              const SizedBox(height: 16),
-              _buildLegend(brightness),
+            // 凡例
+            const SizedBox(height: 16),
+            _buildLegend(brightness),
 
-              // 選択された日付の詳細表示
-              if (_selectedCell != null && !_selectedCell!.isEmpty) ...[
-                const SizedBox(height: 24),
-                ContributionDetailContent(
-                  date: _selectedCell!.date,
-                  count: _selectedCell!.count,
-                  onPreviousDay: _canMoveToPreviousDay()
-                      ? () => _moveToDay(_selectedCell!.date.subtract(const Duration(days: 1)))
-                      : null,
-                  onNextDay: _canMoveToNextDay()
-                      ? () => _moveToDay(_selectedCell!.date.add(const Duration(days: 1)))
+            // 選択された日付の詳細表示
+            if (_selectedCell != null && !_selectedCell!.isEmpty) ...[
+              const SizedBox(height: 24),
+              ContributionDetailContent(
+                date: _selectedCell!.date,
+                count: _selectedCell!.count,
+                onPreviousDay: _canMoveToPreviousDay()
+                    ? () => _moveToDay(
+                        _selectedCell!.date.subtract(const Duration(days: 1)),
+                      )
+                    : null,
+                onNextDay: _canMoveToNextDay()
+                    ? () => _moveToDay(
+                        _selectedCell!.date.add(const Duration(days: 1)),
+                      )
                     : null,
               ),
             ],
@@ -383,7 +300,7 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
   /// 指定した日付に移動
   void _moveToDay(DateTime date) {
     final dateNormalized = DateTime(date.year, date.month, date.day);
-    
+
     // その日のContribution数を取得
     int count = 0;
     for (final c in widget.contributions) {
@@ -421,14 +338,14 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
           final color = _getLegendColor(count, brightness);
           return Padding(
             padding: const EdgeInsets.only(left: 2, right: 2),
-      child: Container(
+            child: Container(
               width: 11,
               height: 11,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
           );
         }),
         const SizedBox(width: 4),
@@ -504,9 +421,6 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
                 });
               },
               onTap: () {
-                debugPrint(
-                  '📅 Tapped: ${cell.date} - ${cell.count} contributions',
-                );
                 // アニメーションをリセット
                 Future.delayed(const Duration(milliseconds: 150), () {
                   if (mounted) {
@@ -556,36 +470,28 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
 
   /// Contribution詳細を表示
   void _showContributionDetail(CalendarCell cell) {
-    debugPrint(
-      '🚀 Showing modal for: ${cell.date} - ${cell.count} contributions',
-    );
-
-    // デバッグ: 簡易ダイアログでテスト（問題を切り分けるため）
-    // showDialog(
-    //   context: context,
-    //   builder: (context) => AlertDialog(
-    //     title: Text('Debug'),
-    //     content: Text('Date: ${cell.date}\nCount: ${cell.count}'),
-    //     actions: [
-    //       TextButton(
-    //         onPressed: () => Navigator.pop(context),
-    //         child: Text('Close'),
-    //       ),
-    //     ],
-    //   ),
-    // );
-
-    try {
-      ContributionDetailModal.show(context, date: cell.date, count: cell.count)
-          .then((_) {
-            debugPrint('✅ Modal closed');
-          })
-          .catchError((error) {
-            debugPrint('❌ Error showing modal: $error');
-          });
-    } catch (e) {
-      debugPrint('❌ Exception: $e');
+    // Contributionデータをマップに変換
+    final contributionMap = <DateTime, int>{};
+    for (final c in widget.contributions) {
+      contributionMap[DateTime(c.date.year, c.date.month, c.date.day)] =
+          c.count;
     }
+
+    // 年の範囲を計算
+    final yearStart = DateTime(_selectedYear, 1, 1);
+    final today = DateTime.now();
+    final yearEnd = DateTime(_selectedYear, 12, 31).isAfter(today)
+        ? today
+        : DateTime(_selectedYear, 12, 31);
+
+    ContributionDetailModal.show(
+      context,
+      date: cell.date,
+      count: cell.count,
+      contributionMap: contributionMap,
+      yearStart: yearStart,
+      yearEnd: yearEnd,
+    );
   }
 
   Color _getColor(int count, Brightness brightness) {
@@ -637,23 +543,22 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
           weekStart.month,
           weekStart.day + i,
         );
-        
+
         // 表示範囲内かチェック（前年の週も含む）
         final isInDisplayRange =
             date.isAfter(start.subtract(const Duration(days: 1))) &&
             (date.isBefore(end) || date.isAtSameMomentAs(end));
-        
+
         // 選択された年の範囲内かチェック
-        final isInSelectedYear = date.isAfter(
-              selectedYearStart.subtract(const Duration(days: 1)),
-            ) &&
+        final isInSelectedYear =
+            date.isAfter(selectedYearStart.subtract(const Duration(days: 1))) &&
             (date.isBefore(selectedYearEnd) ||
                 date.isAtSameMomentAs(selectedYearEnd));
 
         // 選択された年の範囲外でも、データがあれば表示（前年の週を表示）
         final hasData = map.containsKey(date);
         final count = hasData ? (map[date] ?? 0) : 0;
-        
+
         // isEmptyは選択された年の範囲外でデータがない場合のみtrue
         final isEmpty = !isInSelectedYear && !hasData;
 

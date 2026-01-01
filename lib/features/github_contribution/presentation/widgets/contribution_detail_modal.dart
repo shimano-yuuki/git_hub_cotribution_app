@@ -7,11 +7,17 @@ import 'contribution_detail_content.dart';
 class ContributionDetailModal extends StatefulWidget {
   final DateTime date;
   final int count;
+  final Map<DateTime, int>? contributionMap;
+  final DateTime? yearStart;
+  final DateTime? yearEnd;
 
   const ContributionDetailModal({
     super.key,
     required this.date,
     required this.count,
+    this.contributionMap,
+    this.yearStart,
+    this.yearEnd,
   });
 
   /// モーダルを表示する
@@ -19,19 +25,26 @@ class ContributionDetailModal extends StatefulWidget {
     BuildContext context, {
     required DateTime date,
     required int count,
+    Map<DateTime, int>? contributionMap,
+    DateTime? yearStart,
+    DateTime? yearEnd,
   }) {
-    debugPrint('🎯 ContributionDetailModal.show called');
     return showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.6), // 背景マスクを濃くする
+      barrierColor: Colors.black.withValues(alpha: 0.6),
       isScrollControlled: true,
       isDismissible: true,
       enableDrag: true,
       useRootNavigator: false,
       builder: (context) {
-        debugPrint('🏗️ Building modal widget');
-        return ContributionDetailModal(date: date, count: count);
+        return ContributionDetailModal(
+          date: date,
+          count: count,
+          contributionMap: contributionMap,
+          yearStart: yearStart,
+          yearEnd: yearEnd,
+        );
       },
     );
   }
@@ -46,10 +59,15 @@ class _ContributionDetailModalState extends State<ContributionDetailModal>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  late DateTime _currentDate;
+  late int _currentCount;
 
   @override
   void initState() {
     super.initState();
+    _currentDate = widget.date;
+    _currentCount = widget.count;
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -71,6 +89,31 @@ class _ContributionDetailModalState extends State<ContributionDetailModal>
     _animationController.forward();
   }
 
+  void _moveToDay(DateTime date) {
+    final dateNormalized = DateTime(date.year, date.month, date.day);
+    final count = widget.contributionMap?[dateNormalized] ?? 0;
+
+    setState(() {
+      _currentDate = dateNormalized;
+      _currentCount = count;
+    });
+  }
+
+  bool _canMoveToPreviousDay() {
+    if (widget.yearStart == null) return false;
+    final previousDay = _currentDate.subtract(const Duration(days: 1));
+    return !previousDay.isBefore(widget.yearStart!);
+  }
+
+  bool _canMoveToNextDay() {
+    if (widget.yearEnd == null) return false;
+    final today = DateTime.now();
+    final todayNormalized = DateTime(today.year, today.month, today.day);
+    final nextDay = _currentDate.add(const Duration(days: 1));
+    return !nextDay.isAfter(todayNormalized) &&
+        nextDay.year == _currentDate.year;
+  }
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -88,10 +131,7 @@ class _ContributionDetailModalState extends State<ContributionDetailModal>
       child: SlideTransition(
         position: _slideAnimation,
         child: Container(
-          constraints: BoxConstraints(
-            maxHeight: screenHeight * 0.55, // 画面の55%に調整（ボタンが確実に収まるように）
-            minHeight: 300, // 最小高さを設定
-          ),
+          constraints: BoxConstraints(maxHeight: screenHeight * 0.7),
           decoration: BoxDecoration(
             color: Colors.transparent,
             borderRadius: const BorderRadius.only(
@@ -139,37 +179,46 @@ class _ContributionDetailModalState extends State<ContributionDetailModal>
                   ],
                 ),
                 child: SafeArea(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ドラッグハンドル
-                          Center(
-                            child: Container(
-                              width: 40,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: AppColors.textColor(
-                                  brightness,
-                                ).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(2),
-                              ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ドラッグハンドル
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: AppColors.textColor(
+                                brightness,
+                              ).withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(2),
                             ),
                           ),
-                          const SizedBox(height: 24),
+                        ),
+                        const SizedBox(height: 24),
 
-                          // 共通コンテンツを使用
-                          ContributionDetailContent(
-                            date: widget.date,
-                            count: widget.count,
-                            showCloseButton: true,
-                          ),
-                        ],
-                      ),
+                        // 共通コンテンツを使用
+                        ContributionDetailContent(
+                          date: _currentDate,
+                          count: _currentCount,
+                          showCloseButton: true,
+                          onPreviousDay: _canMoveToPreviousDay()
+                              ? () => _moveToDay(
+                                  _currentDate.subtract(
+                                    const Duration(days: 1),
+                                  ),
+                                )
+                              : null,
+                          onNextDay: _canMoveToNextDay()
+                              ? () => _moveToDay(
+                                  _currentDate.add(const Duration(days: 1)),
+                                )
+                              : null,
+                        ),
+                      ],
                     ),
                   ),
                 ),
