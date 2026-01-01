@@ -78,13 +78,29 @@ class GithubRemoteDataSource {
 
       // 開始日と終了日を計算（ISO 8601形式）
       final startDate = DateTime(year, 1, 1);
-      final endDate = DateTime(year, 12, 31);
       final today = DateTime.now();
-      final actualEndDate = endDate.isAfter(today) ? today : endDate;
+      
+      // 今日のデータを確実に含めるため、翌日の開始時刻（UTC）を終了日として指定
+      final tomorrow = today.add(const Duration(days: 1));
+      final tomorrowStart = DateTime.utc(tomorrow.year, tomorrow.month, tomorrow.day);
+      
+      // 年末と翌日の開始時刻のうち、早い方を使用
+      final yearEndUtc = DateTime.utc(year, 12, 31, 23, 59, 59);
+      final actualEndDate = yearEndUtc.isAfter(tomorrowStart) ? tomorrowStart : yearEndUtc;
 
       // ISO 8601形式に変換
       final startDateStr = startDate.toUtc().toIso8601String();
-      final endDateStr = actualEndDate.toUtc().toIso8601String();
+      final endDateStr = actualEndDate.toIso8601String();
+
+      print('');
+      print('🔍🔍🔍 GitHub API Request Details 🔍🔍🔍');
+      print('   Year: $year');
+      print('   Today (local): ${DateTime.now()}');
+      print('   Today (UTC): ${DateTime.now().toUtc()}');
+      print('   Tomorrow start (UTC): $tomorrowStart');
+      print('   Request Start: $startDateStr');
+      print('   Request End: $endDateStr');
+      print('');
 
       // GraphQLクエリ
       final query =
@@ -132,6 +148,16 @@ class GithubRemoteDataSource {
         }
 
         final contributions = <Contribution>[];
+        final today = DateTime.now();
+        final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+        
+        print('');
+        print('📥📥📥 Processing GitHub API Response 📥📥📥');
+        print('   Looking for today: $todayStr');
+        print('');
+        
+        bool foundToday = false;
+        
         for (final week in weeks) {
           final contributionDays = week['contributionDays'] as List<dynamic>?;
           if (contributionDays == null) continue;
@@ -139,6 +165,16 @@ class GithubRemoteDataSource {
           for (final day in contributionDays) {
             final dateStr = day['date'] as String;
             final count = day['contributionCount'] as int? ?? 0;
+
+            // 今日のデータをログ出力
+            if (dateStr == todayStr) {
+              foundToday = true;
+              print('✅✅✅ FOUND TODAY\'S DATA IN API RESPONSE! ✅✅✅');
+              print('   Date: $dateStr');
+              print('   Count: $count contributions');
+              print('   Full data: $day');
+              print('');
+            }
 
             // 日付文字列をDateTimeに変換（YYYY-MM-DD形式）
             final dateParts = dateStr.split('-');
@@ -153,6 +189,21 @@ class GithubRemoteDataSource {
           }
         }
 
+        if (!foundToday) {
+          print('❌❌❌ TODAY\'S DATA NOT IN API RESPONSE! ❌❌❌');
+          print('   Expected: $todayStr');
+          print('');
+        }
+
+        print('✅ Total contributions fetched: ${contributions.length}');
+        if (contributions.isNotEmpty) {
+          contributions.sort((a, b) => a.date.compareTo(b.date));
+          print('   First: ${contributions.first.date} (${contributions.first.count})');
+          print('   Last: ${contributions.last.date} (${contributions.last.count})');
+        }
+        print('📥📥📥 API Response Processing Complete 📥📥📥');
+        print('');
+        
         return contributions;
       } else {
         throw Exception('Contributionデータの取得に失敗しました');

@@ -42,6 +42,9 @@ class AppColors {
   /// ターミナルグリーン（アクセントカラー）
   static const Color terminalGreen = Color(0xFF00FF88);
 
+  /// GitHub グリーン（Contributionカラー）
+  static const Color githubGreen = Color(0xFF26A641);
+
   // ==================== 背景グラデーションカラー ====================
   /// ダークグレー（背景グラデーション用）
   static const Color darkGrey = Color(0xFF2A2A2A);
