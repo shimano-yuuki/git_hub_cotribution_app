@@ -1,5 +1,3 @@
-/// アプリケーション全体で使用するエラークラス
-
 abstract class Failure {
   final String message;
 
