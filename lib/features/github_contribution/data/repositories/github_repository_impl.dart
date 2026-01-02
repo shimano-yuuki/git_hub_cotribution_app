@@ -15,8 +15,8 @@ class GithubRepositoryImpl implements GithubRepository {
   GithubRepositoryImpl({
     GithubRemoteDataSource? remoteDataSource,
     GithubLocalDataSource? localDataSource,
-  })  : remoteDataSource = remoteDataSource ?? GithubRemoteDataSource(),
-        localDataSource = localDataSource ?? GithubLocalDataSource();
+  }) : remoteDataSource = remoteDataSource ?? GithubRemoteDataSource(),
+       localDataSource = localDataSource ?? GithubLocalDataSource();
 
   @override
   Future<Either<Failure, User>> getAuthenticatedUser(String token) async {
@@ -33,13 +33,9 @@ class GithubRepositoryImpl implements GithubRepository {
         );
       } else if (errorMessage.contains('ネットワーク') ||
           errorMessage.contains('接続')) {
-        failure = NetworkFailure(
-          'ネットワーク接続エラーが発生しました。インターネット接続を確認してください。',
-        );
+        failure = NetworkFailure('ネットワーク接続エラーが発生しました。インターネット接続を確認してください。');
       } else {
-        failure = ServerFailure(
-          'サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。',
-        );
+        failure = ServerFailure('サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。');
       }
 
       // エラーログを記録
@@ -64,10 +60,7 @@ class GithubRepositoryImpl implements GithubRepository {
         final failure = const AuthenticationFailure(
           'トークンが無効です。GitHubのアクセストークンを確認してください。',
         );
-        ErrorLogger().logError(
-          failure: failure,
-          context: 'validateToken',
-        );
+        ErrorLogger().logError(failure: failure, context: 'validateToken');
         return Left(failure);
       }
     } catch (e, stackTrace) {
@@ -75,13 +68,9 @@ class GithubRepositoryImpl implements GithubRepository {
       Failure failure;
 
       if (errorMessage.contains('ネットワーク') || errorMessage.contains('接続')) {
-        failure = NetworkFailure(
-          'ネットワーク接続エラーが発生しました。インターネット接続を確認してください。',
-        );
+        failure = NetworkFailure('ネットワーク接続エラーが発生しました。インターネット接続を確認してください。');
       } else {
-        failure = ServerFailure(
-          'サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。',
-        );
+        failure = ServerFailure('サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。');
       }
 
       ErrorLogger().logError(
@@ -106,10 +95,10 @@ class GithubRepositoryImpl implements GithubRepository {
         token,
         year,
       );
-      
+
       // 成功したらキャッシュに保存
       await localDataSource.cacheContributions(year, contributions);
-      
+
       return Right(contributions);
     } catch (e, stackTrace) {
       final errorMessage = e.toString().replaceAll('Exception: ', '');
@@ -119,8 +108,8 @@ class GithubRepositoryImpl implements GithubRepository {
           errorMessage.contains('接続') ||
           errorMessage.contains('タイムアウト')) {
         try {
-          final cachedContributions =
-              await localDataSource.getCachedContributions(year);
+          final cachedContributions = await localDataSource
+              .getCachedContributions(year);
           if (cachedContributions != null && cachedContributions.isNotEmpty) {
             // キャッシュがあればそれを返す（NetworkFailureとして返すが、キャッシュデータは利用可能）
             // ProfileScreen側でキャッシュを取得して表示する
@@ -149,10 +138,7 @@ class GithubRepositoryImpl implements GithubRepository {
           failure: failure,
           context: 'getContributions',
           stackTrace: stackTrace,
-          additionalData: {
-            'error': errorMessage,
-            'year': year,
-          },
+          additionalData: {'error': errorMessage, 'year': year},
         );
         return Left(failure);
       } else if (errorMessage.contains('認証に失敗') ||
@@ -164,10 +150,7 @@ class GithubRepositoryImpl implements GithubRepository {
           failure: failure,
           context: 'getContributions',
           stackTrace: stackTrace,
-          additionalData: {
-            'error': errorMessage,
-            'year': year,
-          },
+          additionalData: {'error': errorMessage, 'year': year},
         );
         return Left(failure);
       } else {
@@ -178,10 +161,7 @@ class GithubRepositoryImpl implements GithubRepository {
           failure: failure,
           context: 'getContributions',
           stackTrace: stackTrace,
-          additionalData: {
-            'error': errorMessage,
-            'year': year,
-          },
+          additionalData: {'error': errorMessage, 'year': year},
         );
         return Left(failure);
       }
@@ -193,8 +173,9 @@ class GithubRepositoryImpl implements GithubRepository {
     int year,
   ) async {
     try {
-      final cachedContributions =
-          await localDataSource.getCachedContributions(year);
+      final cachedContributions = await localDataSource.getCachedContributions(
+        year,
+      );
       if (cachedContributions == null || cachedContributions.isEmpty) {
         final failure = const CacheFailure(
           'キャッシュされたデータがありません。ネットワーク接続を確認して、データを取得してください。',
@@ -215,10 +196,7 @@ class GithubRepositoryImpl implements GithubRepository {
         failure: failure,
         context: 'getCachedContributions',
         stackTrace: stackTrace,
-        additionalData: {
-          'error': e.toString(),
-          'year': year,
-        },
+        additionalData: {'error': e.toString(), 'year': year},
       );
       return Left(failure);
     }
@@ -230,6 +208,123 @@ class GithubRepositoryImpl implements GithubRepository {
       return await localDataSource.getLastUpdated(year);
     } catch (e) {
       return null;
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> getUser(String token, String username) async {
+    try {
+      final user = await remoteDataSource.getUser(token, username);
+      return Right(user);
+    } catch (e, stackTrace) {
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
+      Failure failure;
+
+      if (errorMessage.contains('ユーザーが見つかりません')) {
+        failure = CacheFailure('ユーザーが見つかりませんでした。ユーザー名を確認してください。');
+      } else if (errorMessage.contains('認証に失敗') ||
+          errorMessage.contains('トークンが無効')) {
+        failure = AuthenticationFailure(
+          '認証に失敗しました。GitHubのアクセストークンが無効または期限切れの可能性があります。設定画面でトークンを確認してください。',
+        );
+      } else if (errorMessage.contains('ネットワーク') ||
+          errorMessage.contains('接続')) {
+        failure = NetworkFailure('ネットワーク接続エラーが発生しました。インターネット接続を確認してください。');
+      } else {
+        failure = ServerFailure('サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。');
+      }
+
+      ErrorLogger().logError(
+        failure: failure,
+        context: 'getUser',
+        stackTrace: stackTrace,
+        additionalData: {'error': errorMessage, 'username': username},
+      );
+
+      return Left(failure);
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Contribution>>> getUserContributions(
+    String token,
+    String username,
+    int year,
+  ) async {
+    try {
+      final contributions = await remoteDataSource.getUserContributions(
+        token,
+        username,
+        year,
+      );
+      return Right(contributions);
+    } catch (e, stackTrace) {
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
+
+      Failure failure;
+
+      if (errorMessage.contains('ユーザーが見つかりません')) {
+        failure = CacheFailure('ユーザーが見つかりませんでした。ユーザー名を確認してください。');
+      } else if (errorMessage.contains('ネットワーク') ||
+          errorMessage.contains('接続') ||
+          errorMessage.contains('タイムアウト')) {
+        failure = NetworkFailure('ネットワーク接続エラーが発生しました。インターネット接続を確認してください。');
+      } else if (errorMessage.contains('認証に失敗') ||
+          errorMessage.contains('トークンが無効')) {
+        failure = AuthenticationFailure(
+          '認証に失敗しました。GitHubのアクセストークンが無効または期限切れの可能性があります。設定画面でトークンを確認してください。',
+        );
+      } else {
+        failure = ServerFailure(
+          'Contributionデータの取得に失敗しました。しばらく時間をおいてから再度お試しください。',
+        );
+      }
+
+      ErrorLogger().logError(
+        failure: failure,
+        context: 'getUserContributions',
+        stackTrace: stackTrace,
+        additionalData: {
+          'error': errorMessage,
+          'username': username,
+          'year': year,
+        },
+      );
+
+      return Left(failure);
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<User>>> getFollowingUsers(String token) async {
+    try {
+      final users = await remoteDataSource.getFollowingUsers(token);
+      return Right(users);
+    } catch (e, stackTrace) {
+      final errorMessage = e.toString().replaceAll('Exception: ', '');
+      Failure failure;
+
+      if (errorMessage.contains('認証に失敗') || errorMessage.contains('トークンが無効')) {
+        failure = AuthenticationFailure(
+          '認証に失敗しました。GitHubのアクセストークンが無効または期限切れの可能性があります。設定画面でトークンを確認してください。',
+        );
+      } else if (errorMessage.contains('ネットワーク') ||
+          errorMessage.contains('接続')) {
+        failure = NetworkFailure('ネットワーク接続エラーが発生しました。インターネット接続を確認してください。');
+      } else {
+        failure = ServerFailure(
+          'フォロー中のユーザー一覧の取得に失敗しました。しばらく時間をおいてから再度お試しください。',
+        );
+      }
+
+      ErrorLogger().logError(
+        failure: failure,
+        context: 'getFollowingUsers',
+        stackTrace: stackTrace,
+        additionalData: {'error': errorMessage},
+      );
+
+      return Left(failure);
     }
   }
 }
