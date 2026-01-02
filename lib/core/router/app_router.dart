@@ -14,10 +14,15 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/statistics',
       pageBuilder: (context, state) {
-        final statistics = state.extra as ContributionStatistics;
+        final extra = state.extra as Map<String, dynamic>;
+        final statistics = extra['statistics'] as ContributionStatistics;
+        final year = extra['year'] as int;
         return MaterialPage(
           key: state.pageKey,
-          child: ContributionStatisticsScreen(statistics: statistics),
+          child: ContributionStatisticsScreen(
+            statistics: statistics,
+            year: year,
+          ),
         );
       },
     ),

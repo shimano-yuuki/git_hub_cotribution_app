@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/error/error_logger.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/entities/contribution.dart';
 import '../../domain/repositories/github_repository.dart';
@@ -22,17 +23,34 @@ class GithubRepositoryImpl implements GithubRepository {
     try {
       final user = await remoteDataSource.getAuthenticatedUser(token);
       return Right(user);
-    } catch (e) {
+    } catch (e, stackTrace) {
       final errorMessage = e.toString().replaceAll('Exception: ', '');
+      Failure failure;
 
       if (errorMessage.contains('認証に失敗') || errorMessage.contains('トークンが無効')) {
-        return Left(AuthenticationFailure(errorMessage));
+        failure = AuthenticationFailure(
+          '認証に失敗しました。GitHubのアクセストークンが無効または期限切れの可能性があります。設定画面でトークンを確認してください。',
+        );
       } else if (errorMessage.contains('ネットワーク') ||
           errorMessage.contains('接続')) {
-        return Left(NetworkFailure(errorMessage));
+        failure = NetworkFailure(
+          'ネットワーク接続エラーが発生しました。インターネット接続を確認してください。',
+        );
       } else {
-        return Left(ServerFailure(errorMessage));
+        failure = ServerFailure(
+          'サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。',
+        );
       }
+
+      // エラーログを記録
+      ErrorLogger().logError(
+        failure: failure,
+        context: 'getAuthenticatedUser',
+        stackTrace: stackTrace,
+        additionalData: {'error': errorMessage},
+      );
+
+      return Left(failure);
     }
   }
 
@@ -43,16 +61,37 @@ class GithubRepositoryImpl implements GithubRepository {
       if (isValid) {
         return const Right(true);
       } else {
-        return Left(const AuthenticationFailure('トークンが無効です'));
+        final failure = const AuthenticationFailure(
+          'トークンが無効です。GitHubのアクセストークンを確認してください。',
+        );
+        ErrorLogger().logError(
+          failure: failure,
+          context: 'validateToken',
+        );
+        return Left(failure);
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       final errorMessage = e.toString().replaceAll('Exception: ', '');
+      Failure failure;
 
       if (errorMessage.contains('ネットワーク') || errorMessage.contains('接続')) {
-        return Left(NetworkFailure(errorMessage));
+        failure = NetworkFailure(
+          'ネットワーク接続エラーが発生しました。インターネット接続を確認してください。',
+        );
       } else {
-        return Left(ServerFailure(errorMessage));
+        failure = ServerFailure(
+          'サーバーエラーが発生しました。しばらく時間をおいてから再度お試しください。',
+        );
       }
+
+      ErrorLogger().logError(
+        failure: failure,
+        context: 'validateToken',
+        stackTrace: stackTrace,
+        additionalData: {'error': errorMessage},
+      );
+
+      return Left(failure);
     }
   }
 
@@ -72,7 +111,7 @@ class GithubRepositoryImpl implements GithubRepository {
       await localDataSource.cacheContributions(year, contributions);
       
       return Right(contributions);
-    } catch (e) {
+    } catch (e, stackTrace) {
       final errorMessage = e.toString().replaceAll('Exception: ', '');
 
       // ネットワークエラーの場合はキャッシュから取得を試みる
@@ -85,19 +124,66 @@ class GithubRepositoryImpl implements GithubRepository {
           if (cachedContributions != null && cachedContributions.isNotEmpty) {
             // キャッシュがあればそれを返す（NetworkFailureとして返すが、キャッシュデータは利用可能）
             // ProfileScreen側でキャッシュを取得して表示する
-            return Left(NetworkFailure(
-              'オフラインです。キャッシュされたデータを表示しています。',
-            ));
+            final failure = NetworkFailure(
+              'ネットワーク接続エラーが発生しました。キャッシュされたデータを表示しています。インターネット接続を確認して、更新ボタンを押してください。',
+            );
+            ErrorLogger().logError(
+              failure: failure,
+              context: 'getContributions',
+              stackTrace: stackTrace,
+              additionalData: {
+                'error': errorMessage,
+                'year': year,
+                'usingCache': true,
+              },
+            );
+            return Left(failure);
           }
         } catch (_) {
           // キャッシュ取得に失敗した場合はそのままエラーを返す
         }
-        return Left(NetworkFailure(errorMessage));
+        final failure = NetworkFailure(
+          'ネットワーク接続エラーが発生しました。インターネット接続を確認してください。',
+        );
+        ErrorLogger().logError(
+          failure: failure,
+          context: 'getContributions',
+          stackTrace: stackTrace,
+          additionalData: {
+            'error': errorMessage,
+            'year': year,
+          },
+        );
+        return Left(failure);
       } else if (errorMessage.contains('認証に失敗') ||
           errorMessage.contains('トークンが無効')) {
-        return Left(AuthenticationFailure(errorMessage));
+        final failure = AuthenticationFailure(
+          '認証に失敗しました。GitHubのアクセストークンが無効または期限切れの可能性があります。設定画面でトークンを確認してください。',
+        );
+        ErrorLogger().logError(
+          failure: failure,
+          context: 'getContributions',
+          stackTrace: stackTrace,
+          additionalData: {
+            'error': errorMessage,
+            'year': year,
+          },
+        );
+        return Left(failure);
       } else {
-        return Left(ServerFailure(errorMessage));
+        final failure = ServerFailure(
+          'Contributionデータの取得に失敗しました。しばらく時間をおいてから再度お試しください。',
+        );
+        ErrorLogger().logError(
+          failure: failure,
+          context: 'getContributions',
+          stackTrace: stackTrace,
+          additionalData: {
+            'error': errorMessage,
+            'year': year,
+          },
+        );
+        return Left(failure);
       }
     }
   }
@@ -110,11 +196,31 @@ class GithubRepositoryImpl implements GithubRepository {
       final cachedContributions =
           await localDataSource.getCachedContributions(year);
       if (cachedContributions == null || cachedContributions.isEmpty) {
-        return Left(const CacheFailure('キャッシュされたデータがありません'));
+        final failure = const CacheFailure(
+          'キャッシュされたデータがありません。ネットワーク接続を確認して、データを取得してください。',
+        );
+        ErrorLogger().logError(
+          failure: failure,
+          context: 'getCachedContributions',
+          additionalData: {'year': year},
+        );
+        return Left(failure);
       }
       return Right(cachedContributions);
-    } catch (e) {
-      return Left(CacheFailure('キャッシュの取得に失敗しました: $e'));
+    } catch (e, stackTrace) {
+      final failure = CacheFailure(
+        'キャッシュの取得に失敗しました。アプリを再起動するか、ネットワーク接続を確認してデータを再取得してください。',
+      );
+      ErrorLogger().logError(
+        failure: failure,
+        context: 'getCachedContributions',
+        stackTrace: stackTrace,
+        additionalData: {
+          'error': e.toString(),
+          'year': year,
+        },
+      );
+      return Left(failure);
     }
   }
 

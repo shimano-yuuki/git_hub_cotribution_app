@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/error/failures.dart';
+import '../../../../core/error/retry_handler.dart';
 import '../../../github_contribution/presentation/widgets/contribution_calendar_widget.dart';
 import '../../../github_contribution/domain/entities/contribution.dart';
 import '../../../github_contribution/domain/usecases/get_contributions_usecase.dart';
@@ -12,6 +14,7 @@ import '../../../settings/data/datasources/token_local_datasource.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../../../shared/widgets/animated_fade_in.dart';
 import '../../../../shared/widgets/loading_animation.dart';
+import '../../../../shared/widgets/error_display_widget.dart';
 import '../../../github_contribution/domain/usecases/calculate_contribution_statistics_usecase.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
@@ -46,10 +49,10 @@ class ProfileScreen extends HookWidget {
     final contributions = useState<List<Contribution>>([]);
     final isLoading = useState<bool>(true);
     final isRefreshing = useState<bool>(false);
-    final error = useState<String?>(null);
+    final error = useState<Failure?>(null);
     final selectedYear = useState<int>(DateTime.now().year);
     final lastUpdated = useState<DateTime?>(null);
-    final isOffline = useState<bool>(false);
+    final isRetrying = useState<bool>(false);
 
     // ローディング状態の変更を通知（ビルド完了後に実行）
     useEffect(() {
@@ -59,7 +62,7 @@ class ProfileScreen extends HookWidget {
       return null;
     }, [isLoading.value]);
 
-    // データ取得関数
+    // データ取得関数（リトライ機能付き）
     Future<void> fetchContributions({bool isRefresh = false}) async {
       if (!isRefresh) {
         isLoading.value = true;
@@ -67,7 +70,6 @@ class ProfileScreen extends HookWidget {
         isRefreshing.value = true;
       }
       error.value = null;
-      isOffline.value = false;
 
       try {
         // 保存されているトークンを取得
@@ -101,22 +103,22 @@ class ProfileScreen extends HookWidget {
           });
         }
 
-        // リモートからデータを取得
-        final result = await getContributionsUseCase(
-          token.value,
-          selectedYear.value,
+        // リトライ機能付きでリモートからデータを取得
+        final result = await RetryHandler.executeWithRetry(
+          action: () =>
+              getContributionsUseCase(token.value, selectedYear.value),
+          config: const RetryConfig(
+            maxRetries: 2,
+            initialDelay: Duration(seconds: 1),
+          ),
         );
 
         result.fold(
           (failure) {
-            // ネットワークエラーの場合
-            if (failure.message.contains('オフライン') ||
-                failure.message.contains('ネットワーク') ||
-                failure.message.contains('接続')) {
-              isOffline.value = true;
-              error.value = failure.message;
+            error.value = failure;
 
-              // キャッシュから取得を試みる
+            // ネットワークエラーの場合はキャッシュから取得を試みる
+            if (failure is NetworkFailure) {
               if (contributions.value.isEmpty) {
                 githubRepository
                     .getCachedContributions(selectedYear.value)
@@ -131,8 +133,6 @@ class ProfileScreen extends HookWidget {
                       });
                     });
               }
-            } else {
-              error.value = failure.message;
             }
           },
           (data) {
@@ -164,12 +164,11 @@ class ProfileScreen extends HookWidget {
                 .then((date) => lastUpdated.value = date);
 
             error.value = null;
-            isOffline.value = false;
           },
         );
       } catch (e) {
-        error.value = 'Contributionデータの取得に失敗しました: $e';
-        isOffline.value = true;
+        // 予期しないエラー
+        error.value = ServerFailure('予期しないエラーが発生しました: $e');
 
         // キャッシュから取得を試みる
         if (contributions.value.isEmpty) {
@@ -192,7 +191,14 @@ class ProfileScreen extends HookWidget {
         } else {
           isRefreshing.value = false;
         }
+        isRetrying.value = false;
       }
+    }
+
+    // リトライ関数
+    Future<void> retryFetch() async {
+      isRetrying.value = true;
+      await fetchContributions(isRefresh: true);
     }
 
     // 初期化時にContributionデータを取得
@@ -250,77 +256,78 @@ class ProfileScreen extends HookWidget {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        // オフライン/エラーメッセージ表示
-                        if (isOffline.value)
-                          AnimatedFadeIn(
-                            delay: 300.0,
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.orange.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.orange.withValues(alpha: 0.3),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.wifi_off,
-                                    size: 16,
-                                    color: Colors.orange,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      error.value ??
-                                          'オフラインです。キャッシュされたデータを表示しています。',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.orange,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        else if (error.value != null && !isOffline.value)
+                        // エラーメッセージ表示
+                        if (error.value != null && !isLoading.value)
                           AnimatedFadeIn(
                             delay: 300.0,
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 16),
-                              child: Text(
-                                error.value!,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.orange,
-                                ),
+                              child: Stack(
+                                children: [
+                                  ErrorDisplayWidget(
+                                    failure: error.value!,
+                                    onRetry: isRetrying.value
+                                        ? null
+                                        : retryFetch,
+                                  ),
+                                  if (isRetrying.value)
+                                    Positioned.fill(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            24,
+                                          ),
+                                        ),
+                                        child: const Center(
+                                          child: ThemedLoadingAnimation(
+                                            size: 40.0,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
                           ),
-                        // カレンダーウィジェット
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 400),
-                          transitionBuilder: (child, animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          },
-                          child:
-                              !isLoading.value && contributions.value.isNotEmpty
-                              ? ContributionCalendarWidget(
-                                  key: const ValueKey('calendar'),
-                                  contributions: contributions.value,
-                                  initialYear: selectedYear.value,
-                                  onYearChanged: (newYear) {
-                                    selectedYear.value = newYear;
-                                  },
-                                )
-                              : const SizedBox.shrink(key: ValueKey('empty')),
-                        ),
+                        // カレンダーウィジェットまたはエラー表示
+                        if (!isLoading.value &&
+                            error.value == null &&
+                            contributions.value.isNotEmpty)
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 400),
+                            transitionBuilder: (child, animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                            child: ContributionCalendarWidget(
+                              key: const ValueKey('calendar'),
+                              contributions: contributions.value,
+                              initialYear: selectedYear.value,
+                              onYearChanged: (newYear) {
+                                selectedYear.value = newYear;
+                              },
+                            ),
+                          )
+                        else if (!isLoading.value &&
+                            error.value == null &&
+                            contributions.value.isEmpty)
+                          AnimatedFadeIn(
+                            delay: 300.0,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: ErrorDisplayWidget(
+                                failure: const CacheFailure(
+                                  'データが見つかりませんでした。ネットワーク接続を確認して、データを取得してください。',
+                                ),
+                                onRetry: isRetrying.value ? null : retryFetch,
+                              ),
+                            ),
+                          ),
                         const SizedBox(height: 16),
                         // 統計データ確認ボタン
                         if (!isLoading.value && contributions.value.isNotEmpty)
@@ -338,7 +345,10 @@ class ProfileScreen extends HookWidget {
                                         );
                                     context.push(
                                       '/statistics',
-                                      extra: statistics,
+                                      extra: {
+                                        'statistics': statistics,
+                                        'year': selectedYear.value,
+                                      },
                                     );
                                   },
                                   borderRadius: BorderRadius.circular(24),
