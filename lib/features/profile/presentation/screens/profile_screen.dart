@@ -15,6 +15,7 @@ import '../../../../shared/widgets/glass_container.dart';
 import '../../../../shared/widgets/animated_fade_in.dart';
 import '../../../../shared/widgets/loading_animation.dart';
 import '../../../../shared/widgets/error_display_widget.dart';
+import '../../../../shared/widgets/statistics_button.dart';
 import '../../../github_contribution/domain/usecases/calculate_contribution_statistics_usecase.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
@@ -217,7 +218,37 @@ class ProfileScreen extends HookWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 24),
+                const SizedBox(height: 48),
+                // フォロー中のユーザーボタン
+                AnimatedFadeSlideIn(
+                  delay: 50.0,
+                  child: InkWell(
+                    onTap: () => context.push('/following'),
+                    borderRadius: BorderRadius.circular(16),
+                    child: GlassContainer(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          Icon(Icons.people, color: textColor, size: 24),
+
+                          Expanded(
+                            child: Text(
+                              textAlign: TextAlign.center,
+                              '他のユーザーを確認する',
+                              style: TextStyle(fontSize: 16, color: textColor),
+                            ),
+                          ),
+                          Icon(
+                            Icons.arrow_forward_ios,
+                            color: textColor,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 // Contributionカレンダーセクション
                 AnimatedFadeSlideIn(
                   delay: 100.0,
@@ -331,59 +362,13 @@ class ProfileScreen extends HookWidget {
                         const SizedBox(height: 16),
                         // 統計データ確認ボタン
                         if (!isLoading.value && contributions.value.isNotEmpty)
-                          AnimatedFadeIn(
-                            delay: 350.0,
-                            child: GlassContainer(
-                              padding: EdgeInsets.zero,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: () {
-                                    final statistics =
-                                        calculateStatisticsUseCase(
-                                          contributions.value,
-                                        );
-                                    context.push(
-                                      '/statistics',
-                                      extra: {
-                                        'statistics': statistics,
-                                        'year': selectedYear.value,
-                                      },
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(24),
-                                  child: Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 16,
-                                      horizontal: 20,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.bar_chart,
-                                          color: textColor,
-                                          size: 20,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '統計データを確認する',
-                                          style: TextStyle(
-                                            color: textColor,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
+                          StatisticsButton(
+                            statistics: calculateStatisticsUseCase(
+                              contributions.value,
                             ),
+                            year: selectedYear.value,
                           ),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
