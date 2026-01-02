@@ -9,10 +9,12 @@ import '../../../../shared/widgets/geometric_background.dart';
 /// Contribution統計情報を表示する画面
 class ContributionStatisticsScreen extends StatelessWidget {
   final ContributionStatistics statistics;
+  final int year;
 
   const ContributionStatisticsScreen({
     super.key,
     required this.statistics,
+    required this.year,
   });
 
   @override
@@ -41,17 +43,6 @@ class ContributionStatisticsScreen extends StatelessWidget {
                           color: textColor,
                         ),
                         onPressed: () => context.pop(),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          '統計情報',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
                       ),
                     ],
                   ),
