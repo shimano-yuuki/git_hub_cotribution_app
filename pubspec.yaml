@@ -52,6 +52,9 @@ dependencies:
   
   # Functional Programming (Either型)
   fpdart: ^1.1.0
+  
+  # Loading Animation
+  loading_animation_widget: ^1.3.0
 
 dev_dependencies:
   flutter_test:
