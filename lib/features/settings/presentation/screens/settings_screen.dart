@@ -193,9 +193,7 @@ class _TokenInputForm extends HookWidget {
         ),
         if (tokenState.error != null) ...[
           const SizedBox(height: 16),
-          AnimatedFadeIn(
-            child: ErrorMessageWidget(message: tokenState.error!),
-          ),
+          AnimatedFadeIn(child: ErrorMessageWidget(message: tokenState.error!)),
         ],
         if (tokenState.isSaved && tokenState.error == null) ...[
           const SizedBox(height: 16),

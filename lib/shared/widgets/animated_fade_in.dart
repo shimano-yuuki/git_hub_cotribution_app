@@ -26,10 +26,7 @@ class AnimatedFadeIn extends StatelessWidget {
         curve: curve,
       ),
       builder: (context, value, child) {
-        return Opacity(
-          opacity: value,
-          child: child,
-        );
+        return Opacity(opacity: value, child: child);
       },
       child: child,
     );
@@ -120,4 +117,3 @@ class AnimatedFadeSlideIn extends StatelessWidget {
     );
   }
 }
-

@@ -61,9 +61,7 @@ class _ContributionDetailModalContent extends StatelessWidget {
             return FadeTransition(
               opacity: AlwaysStoppedAnimation(value),
               child: SlideTransition(
-                position: AlwaysStoppedAnimation(
-                  Offset(0, 1 - value),
-                ),
+                position: AlwaysStoppedAnimation(Offset(0, 1 - value)),
                 child: child,
               ),
             );
@@ -87,7 +85,9 @@ class _ContributionDetailModalContent extends StatelessWidget {
                         end: Alignment.bottomRight,
                         colors: isDark
                             ? [
-                                AppColors.githubDarkSurface.withValues(alpha: 0.85),
+                                AppColors.githubDarkSurface.withValues(
+                                  alpha: 0.85,
+                                ),
                                 AppColors.githubDarkBg.withValues(alpha: 0.85),
                               ]
                             : [
@@ -260,4 +260,3 @@ class _ModalGeometricPatternPainter extends CustomPainter {
   bool shouldRepaint(covariant _ModalGeometricPatternPainter oldDelegate) =>
       oldDelegate.isDark != isDark;
 }
-
