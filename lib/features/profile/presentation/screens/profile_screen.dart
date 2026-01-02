@@ -12,6 +12,8 @@ import '../../../settings/data/datasources/token_local_datasource.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../../../shared/widgets/animated_fade_in.dart';
 import '../../../../shared/widgets/loading_animation.dart';
+import '../../../github_contribution/domain/usecases/calculate_contribution_statistics_usecase.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
 
 class ProfileScreen extends HookWidget {
@@ -35,6 +37,9 @@ class ProfileScreen extends HookWidget {
     );
     final getContributionsUseCase = useMemoized(
       () => GetContributionsUseCase(githubRepository),
+    );
+    final calculateStatisticsUseCase = useMemoized(
+      () => CalculateContributionStatisticsUseCase(),
     );
 
     // 状態管理
@@ -317,6 +322,58 @@ class ProfileScreen extends HookWidget {
                               : const SizedBox.shrink(key: ValueKey('empty')),
                         ),
                         const SizedBox(height: 16),
+                        // 統計データ確認ボタン
+                        if (!isLoading.value && contributions.value.isNotEmpty)
+                          AnimatedFadeIn(
+                            delay: 350.0,
+                            child: GlassContainer(
+                              padding: EdgeInsets.zero,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    final statistics =
+                                        calculateStatisticsUseCase(
+                                          contributions.value,
+                                        );
+                                    context.push(
+                                      '/statistics',
+                                      extra: statistics,
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16,
+                                      horizontal: 20,
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.bar_chart,
+                                          color: textColor,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '統計データを確認する',
+                                          style: TextStyle(
+                                            color: textColor,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
