@@ -29,4 +29,18 @@ abstract class GithubRepository {
     String token,
     int year,
   );
+
+  /// 最終更新日時を取得する
+  ///
+  /// [year] 取得する年
+  ///
+  /// Returns [DateTime?] 最終更新日時（キャッシュがない場合はnull）
+  Future<DateTime?> getLastUpdated(int year);
+
+  /// キャッシュからContributionデータを取得する
+  ///
+  /// [year] 取得する年
+  ///
+  /// Returns [Either<Failure, List<Contribution>>]
+  Future<Either<Failure, List<Contribution>>> getCachedContributions(int year);
 }
