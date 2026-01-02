@@ -38,10 +38,7 @@ class ContributionStatisticsScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: Icon(
-                          Icons.arrow_back,
-                          color: textColor,
-                        ),
+                        icon: Icon(Icons.arrow_back, color: textColor),
                         onPressed: () => context.pop(),
                       ),
                     ],
@@ -165,9 +162,7 @@ class ContributionStatisticsScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: highlight
-                        ? AppColors.terminalGreen
-                        : textColor,
+                    color: highlight ? AppColors.terminalGreen : textColor,
                   ),
                 ),
               ],
@@ -191,4 +186,3 @@ class ContributionStatisticsScreen extends StatelessWidget {
     }
   }
 }
-
