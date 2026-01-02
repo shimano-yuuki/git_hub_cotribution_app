@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/contribution.dart';
-import 'contribution_detail_modal.dart';
-import 'contribution_detail_content.dart';
 
 class ContributionCalendarWidget extends StatefulWidget {
   final List<Contribution> contributions;
@@ -32,26 +30,27 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
   bool _hasScrolled = false;
   CalendarCell? _tappedCell;
   CalendarCell? _selectedCell; // 選択されたセルを保持
+  CalendarCell? _todayCell; // 今日の日付のセルを保持
 
   @override
   void initState() {
     super.initState();
     _selectedYear = widget.initialYear ?? DateTime.now().year;
-    // 今日の日付を初期選択状態にする
-    _initializeSelectedCell();
+    // 今日の日付データを初期化
+    _initializeTodayCell();
   }
 
   @override
   void didUpdateWidget(ContributionCalendarWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // contributionsが更新されたら、選択セルも更新
+    // contributionsが更新されたら、今日のセルも更新
     if (oldWidget.contributions != widget.contributions) {
-      _initializeSelectedCell();
+      _initializeTodayCell();
     }
   }
 
-  /// 今日の日付を選択状態に初期化
-  void _initializeSelectedCell() {
+  /// 今日の日付データを初期化
+  void _initializeTodayCell() {
     if (widget.contributions.isEmpty) {
       return;
     }
@@ -72,7 +71,7 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
     }
 
     setState(() {
-      _selectedCell = CalendarCell(
+      _todayCell = CalendarCell(
         date: todayNormalized,
         count: todayCount,
         isEmpty: false,
@@ -256,68 +255,18 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
             const SizedBox(height: 16),
             _buildLegend(brightness),
 
-            // 選択された日付の詳細表示
+            // 選択されたセルの情報を表示（選択されていない場合は今日の日付情報を表示）
             if (_selectedCell != null && !_selectedCell!.isEmpty) ...[
               const SizedBox(height: 24),
-              ContributionDetailContent(
-                date: _selectedCell!.date,
-                count: _selectedCell!.count,
-                onPreviousDay: _canMoveToPreviousDay()
-                    ? () => _moveToDay(
-                        _selectedCell!.date.subtract(const Duration(days: 1)),
-                      )
-                    : null,
-                onNextDay: _canMoveToNextDay()
-                    ? () => _moveToDay(
-                        _selectedCell!.date.add(const Duration(days: 1)),
-                      )
-                    : null,
-              ),
+              _buildSelectedCellInfo(_selectedCell!, brightness),
+            ] else if (_todayCell != null && !_todayCell!.isEmpty) ...[
+              const SizedBox(height: 24),
+              _buildTodayInfo(_todayCell!, brightness),
             ],
           ],
         );
       },
     );
-  }
-
-  /// 前の日に移動可能かチェック
-  bool _canMoveToPreviousDay() {
-    if (_selectedCell == null) return false;
-    final yearStart = DateTime(_selectedYear, 1, 1);
-    final previousDay = _selectedCell!.date.subtract(const Duration(days: 1));
-    return !previousDay.isBefore(yearStart);
-  }
-
-  /// 次の日に移動可能かチェック
-  bool _canMoveToNextDay() {
-    if (_selectedCell == null) return false;
-    final today = DateTime.now();
-    final todayNormalized = DateTime(today.year, today.month, today.day);
-    final nextDay = _selectedCell!.date.add(const Duration(days: 1));
-    return !nextDay.isAfter(todayNormalized) && nextDay.year == _selectedYear;
-  }
-
-  /// 指定した日付に移動
-  void _moveToDay(DateTime date) {
-    final dateNormalized = DateTime(date.year, date.month, date.day);
-
-    // その日のContribution数を取得
-    int count = 0;
-    for (final c in widget.contributions) {
-      final cDate = DateTime(c.date.year, c.date.month, c.date.day);
-      if (cDate == dateNormalized) {
-        count = c.count;
-        break;
-      }
-    }
-
-    setState(() {
-      _selectedCell = CalendarCell(
-        date: dateNormalized,
-        count: count,
-        isEmpty: false,
-      );
-    });
   }
 
   /// 凡例を構築
@@ -354,6 +303,233 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
           style: TextStyle(
             fontSize: 12,
             color: textColor.withValues(alpha: 0.6),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 選択されたセルの情報を表示
+  Widget _buildSelectedCellInfo(CalendarCell cell, Brightness brightness) {
+    final textColor = AppColors.textColor(brightness);
+    final isDark = brightness == Brightness.dark;
+
+    // 年の範囲を計算
+    final yearStart = DateTime(_selectedYear, 1, 1);
+    final today = DateTime.now();
+
+    bool canMoveToPreviousDay() {
+      final previousDay = cell.date.subtract(const Duration(days: 1));
+      return !previousDay.isBefore(yearStart);
+    }
+
+    bool canMoveToNextDay() {
+      final todayNormalized = DateTime(today.year, today.month, today.day);
+      final nextDay = cell.date.add(const Duration(days: 1));
+      return !nextDay.isAfter(todayNormalized) && nextDay.year == _selectedYear;
+    }
+
+    void moveToDay(DateTime date) {
+      final dateNormalized = DateTime(date.year, date.month, date.day);
+      int count = 0;
+      for (final c in widget.contributions) {
+        final cDate = DateTime(c.date.year, c.date.month, c.date.day);
+        if (cDate == dateNormalized) {
+          count = c.count;
+          break;
+        }
+      }
+
+      setState(() {
+        _selectedCell = CalendarCell(
+          date: dateNormalized,
+          count: count,
+          isEmpty: false,
+        );
+      });
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.githubDarkBorder.withValues(alpha: 0.2)
+            : AppColors.githubLightBorder.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 日付とナビゲーション
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.chevron_left,
+                  color: canMoveToPreviousDay()
+                      ? textColor
+                      : textColor.withValues(alpha: 0.3),
+                ),
+                onPressed: canMoveToPreviousDay()
+                    ? () =>
+                          moveToDay(cell.date.subtract(const Duration(days: 1)))
+                    : null,
+              ),
+              Expanded(
+                child: Text(
+                  '${cell.date.year}年${cell.date.month}月${cell.date.day}日',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.chevron_right,
+                  color: canMoveToNextDay()
+                      ? textColor
+                      : textColor.withValues(alpha: 0.3),
+                ),
+                onPressed: canMoveToNextDay()
+                    ? () => moveToDay(cell.date.add(const Duration(days: 1)))
+                    : null,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Contribution数と活動レベル
+          Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: _getColor(cell.count, brightness),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      cell.count > 0
+                          ? '${cell.count} contributions'
+                          : 'No contributions',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    _buildActivityLevel(cell.count, textColor, isDark),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 今日の日付情報を表示
+  Widget _buildTodayInfo(CalendarCell cell, Brightness brightness) {
+    final textColor = AppColors.textColor(brightness);
+    final isDark = brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark
+            ? AppColors.githubDarkBorder.withValues(alpha: 0.2)
+            : AppColors.githubLightBorder.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+              color: _getColor(cell.count, brightness),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${cell.date.year}年${cell.date.month}月${cell.date.day}日',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  cell.count > 0
+                      ? '${cell.count} contributions'
+                      : 'No contributions',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: textColor.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 活動レベルを表示
+  Widget _buildActivityLevel(int count, Color textColor, bool isDark) {
+    String level;
+    Color levelColor;
+
+    if (count == 0) {
+      level = '活動なし';
+      levelColor = isDark
+          ? AppColors.githubDarkBorder
+          : AppColors.githubLightBorder;
+    } else if (count <= 3) {
+      level = 'もう少し頑張りましょう！';
+      levelColor = const Color(0xFF0E4429);
+    } else if (count <= 9) {
+      level = '素晴らしい';
+      levelColor = const Color(0xFF006D32);
+    } else if (count <= 19) {
+      level = 'すごい！';
+      levelColor = const Color(0xFF26A641);
+    } else {
+      level = 'すごすぎる！';
+      levelColor = const Color(0xFF39D353);
+    }
+
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: levelColor, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          level,
+          style: TextStyle(
+            fontSize: 12,
+            color: textColor.withValues(alpha: 0.7),
           ),
         ),
       ],
@@ -402,52 +578,51 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
       );
     }
 
-    final isTapped = _tappedCell?.date == cell.date;
-
     return Tooltip(
       message: cell.count > 0
           ? '${cell.date.year}/${cell.date.month}/${cell.date.day}: ${cell.count} contributions'
           : '${cell.date.year}/${cell.date.month}/${cell.date.day}: No contributions',
-      child: TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 150),
-        tween: Tween<double>(begin: 1.0, end: isTapped ? 0.85 : 1.0),
-        builder: (context, scale, child) {
-          return Transform.scale(
-            scale: scale,
-            child: GestureDetector(
-              onTapDown: (_) {
-                setState(() {
-                  _tappedCell = cell;
-                });
-              },
-              onTap: () {
-                // アニメーションをリセット
-                Future.delayed(const Duration(milliseconds: 150), () {
-                  if (mounted) {
-                    setState(() {
-                      _tappedCell = null;
-                    });
-                  }
-                });
-                // 選択されたセルを更新
-                setState(() {
-                  _selectedCell = cell;
-                });
-                // モーダルを表示
-                _showContributionDetail(cell);
-              },
-              onTapCancel: () {
-                setState(() {
-                  _tappedCell = null;
-                });
-              },
+      child: GestureDetector(
+        onTapDown: (_) {
+          setState(() {
+            _tappedCell = cell;
+          });
+        },
+        onTap: () {
+          // アニメーションをリセット
+          Future.delayed(const Duration(milliseconds: 150), () {
+            if (mounted) {
+              setState(() {
+                _tappedCell = null;
+              });
+            }
+          });
+          // 選択されたセルを更新
+          setState(() {
+            _selectedCell = cell;
+          });
+        },
+        onTapCancel: () {
+          setState(() {
+            _tappedCell = null;
+          });
+        },
+        child: TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 150),
+          tween: Tween<double>(
+            begin: 1.0,
+            end: _tappedCell?.date == cell.date ? 0.85 : 1.0,
+          ),
+          builder: (context, scale, child) {
+            return Transform.scale(
+              scale: scale,
               child: Container(
                 width: size,
                 height: size,
                 decoration: BoxDecoration(
                   color: _getColor(cell.count, brightness),
                   borderRadius: BorderRadius.circular(2),
-                  boxShadow: isTapped
+                  boxShadow: _tappedCell?.date == cell.date
                       ? [
                           BoxShadow(
                             color: _getColor(
@@ -461,36 +636,10 @@ class _ContributionCalendarWidgetState extends State<ContributionCalendarWidget>
                       : null,
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
-    );
-  }
-
-  /// Contribution詳細を表示
-  void _showContributionDetail(CalendarCell cell) {
-    // Contributionデータをマップに変換
-    final contributionMap = <DateTime, int>{};
-    for (final c in widget.contributions) {
-      contributionMap[DateTime(c.date.year, c.date.month, c.date.day)] =
-          c.count;
-    }
-
-    // 年の範囲を計算
-    final yearStart = DateTime(_selectedYear, 1, 1);
-    final today = DateTime.now();
-    final yearEnd = DateTime(_selectedYear, 12, 31).isAfter(today)
-        ? today
-        : DateTime(_selectedYear, 12, 31);
-
-    ContributionDetailModal.show(
-      context,
-      date: cell.date,
-      count: cell.count,
-      contributionMap: contributionMap,
-      yearStart: yearStart,
-      yearEnd: yearEnd,
     );
   }
 
