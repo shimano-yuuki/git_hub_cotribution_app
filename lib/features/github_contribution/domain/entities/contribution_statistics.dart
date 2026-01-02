@@ -23,4 +23,3 @@ class ContributionStatistics {
     required this.thisWeekContributions,
   });
 }
-

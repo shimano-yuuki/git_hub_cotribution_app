@@ -75,13 +75,16 @@ class MainNavigation extends HookWidget {
             return FadeTransition(
               opacity: animation,
               child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0.1, 0.0),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                )),
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0.1, 0.0),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    ),
                 child: child,
               ),
             );
@@ -95,18 +98,18 @@ class MainNavigation extends HookWidget {
       bottomNavigationBar: Opacity(
         opacity: isLoading.value ? 0.5 : 1.0,
         child: CircularBottomNavigation(
-        tabItems,
-        controller: navigationController,
-        selectedPos: selectedPos.value,
-        barHeight: 80.0,
-        barBackgroundColor: barBackgroundColor,
-        selectedIconColor: selectedIconColor,
-        normalIconColor: normalIconColor,
-        animationDuration: const Duration(milliseconds: 300),
-        selectedCallback: (int? selectedPosValue) {
-          selectedPos.value = selectedPosValue ?? 0;
-          navigationController.value = selectedPos.value;
-        },
+          tabItems,
+          controller: navigationController,
+          selectedPos: selectedPos.value,
+          barHeight: 80.0,
+          barBackgroundColor: barBackgroundColor,
+          selectedIconColor: selectedIconColor,
+          normalIconColor: normalIconColor,
+          animationDuration: const Duration(milliseconds: 300),
+          selectedCallback: (int? selectedPosValue) {
+            selectedPos.value = selectedPosValue ?? 0;
+            navigationController.value = selectedPos.value;
+          },
         ),
       ),
     );
