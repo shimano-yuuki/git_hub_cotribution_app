@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/loading_animation.dart';
 
 /// ローディング状態を含む保存ボタンウィジェット
 class SaveButton extends StatelessWidget {
@@ -26,15 +27,9 @@ class SaveButton extends StatelessWidget {
         elevation: 0,
       ),
       child: isLoading
-          ? const SizedBox(
-              height: 24,
-              width: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  AppColors.githubDarkBg,
-                ),
-              ),
+          ? const ThemedLoadingAnimation(
+              size: 24.0,
+              color: AppColors.githubDarkBg,
             )
           : Text(
               label,

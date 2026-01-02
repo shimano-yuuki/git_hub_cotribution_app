@@ -1,232 +1,263 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'dart:math' as math;
 import '../../../../core/theme/app_colors.dart';
 import 'contribution_detail_content.dart';
 
-/// Contribution詳細を表示するモーダル
-class ContributionDetailModal extends StatefulWidget {
-  final DateTime date;
-  final int count;
-  final Map<DateTime, int>? contributionMap;
-  final DateTime? yearStart;
-  final DateTime? yearEnd;
-
-  const ContributionDetailModal({
-    super.key,
-    required this.date,
-    required this.count,
-    this.contributionMap,
-    this.yearStart,
-    this.yearEnd,
-  });
-
-  /// モーダルを表示する
-  static Future<void> show(
+class ContributionDetailModal {
+  static void show(
     BuildContext context, {
     required DateTime date,
     required int count,
-    Map<DateTime, int>? contributionMap,
-    DateTime? yearStart,
-    DateTime? yearEnd,
+    required Map<DateTime, int> contributionMap,
+    required DateTime yearStart,
+    required DateTime yearEnd,
   }) {
-    return showModalBottomSheet<void>(
+    showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
       isScrollControlled: true,
-      isDismissible: true,
-      enableDrag: true,
-      useRootNavigator: false,
-      builder: (context) {
-        return ContributionDetailModal(
-          date: date,
-          count: count,
-          contributionMap: contributionMap,
-          yearStart: yearStart,
-          yearEnd: yearEnd,
-        );
-      },
+      backgroundColor: Colors.transparent,
+      builder: (context) => _ContributionDetailModalContent(
+        date: date,
+        count: count,
+        contributionMap: contributionMap,
+        yearStart: yearStart,
+        yearEnd: yearEnd,
+      ),
     );
   }
-
-  @override
-  State<ContributionDetailModal> createState() =>
-      _ContributionDetailModalState();
 }
 
-class _ContributionDetailModalState extends State<ContributionDetailModal>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
-  late DateTime _currentDate;
-  late int _currentCount;
+class _ContributionDetailModalContent extends StatelessWidget {
+  final DateTime date;
+  final int count;
+  final Map<DateTime, int> contributionMap;
+  final DateTime yearStart;
+  final DateTime yearEnd;
 
-  @override
-  void initState() {
-    super.initState();
-    _currentDate = widget.date;
-    _currentCount = widget.count;
-
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    );
-
-    _fadeAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    );
-
-    _slideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
-          CurvedAnimation(
-            parent: _animationController,
-            curve: Curves.easeOutCubic,
-          ),
-        );
-
-    _animationController.forward();
-  }
-
-  void _moveToDay(DateTime date) {
-    final dateNormalized = DateTime(date.year, date.month, date.day);
-    final count = widget.contributionMap?[dateNormalized] ?? 0;
-
-    setState(() {
-      _currentDate = dateNormalized;
-      _currentCount = count;
-    });
-  }
-
-  bool _canMoveToPreviousDay() {
-    if (widget.yearStart == null) return false;
-    final previousDay = _currentDate.subtract(const Duration(days: 1));
-    return !previousDay.isBefore(widget.yearStart!);
-  }
-
-  bool _canMoveToNextDay() {
-    if (widget.yearEnd == null) return false;
-    final today = DateTime.now();
-    final todayNormalized = DateTime(today.year, today.month, today.day);
-    final nextDay = _currentDate.add(const Duration(days: 1));
-    return !nextDay.isAfter(todayNormalized) &&
-        nextDay.year == _currentDate.year;
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
+  const _ContributionDetailModalContent({
+    required this.date,
+    required this.count,
+    required this.contributionMap,
+    required this.yearStart,
+    required this.yearEnd,
+  });
 
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
     final isDark = brightness == Brightness.dark;
-    final screenHeight = MediaQuery.of(context).size.height;
 
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: Container(
-          constraints: BoxConstraints(maxHeight: screenHeight * 0.7),
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-          ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: isDark
-                        ? [
-                            AppColors.githubDarkSurface.withValues(alpha: 0.95),
-                            AppColors.githubDarkSurface.withValues(alpha: 0.9),
-                          ]
-                        : [
-                            AppColors.white.withValues(alpha: 0.95),
-                            AppColors.white.withValues(alpha: 0.9),
-                          ],
-                  ),
-                  border: Border(
-                    top: BorderSide(
-                      color: isDark
-                          ? AppColors.githubDarkBorder.withValues(alpha: 0.5)
-                          : AppColors.githubLightBorder.withValues(alpha: 0.5),
-                      width: 1.5,
-                    ),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 30,
-                      spreadRadius: 0,
-                      offset: const Offset(0, -10),
-                    ),
-                  ],
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      builder: (context, scrollController) {
+        return TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+          builder: (context, value, child) {
+            return FadeTransition(
+              opacity: AlwaysStoppedAnimation(value),
+              child: SlideTransition(
+                position: AlwaysStoppedAnimation(
+                  Offset(0, 1 - value),
                 ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+                child: child,
+              ),
+            );
+          },
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            child: Stack(
+              children: [
+                // ジオメトリック背景
+                CustomPaint(
+                  painter: _ModalGeometricPatternPainter(isDark: isDark),
+                  size: Size.infinite,
+                ),
+                // ガラスモーフィズム効果
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: isDark
+                            ? [
+                                AppColors.githubDarkSurface.withValues(alpha: 0.85),
+                                AppColors.githubDarkBg.withValues(alpha: 0.85),
+                              ]
+                            : [
+                                AppColors.white.withValues(alpha: 0.85),
+                                AppColors.githubLightBg.withValues(alpha: 0.85),
+                              ],
+                      ),
+                      border: Border(
+                        top: BorderSide(
+                          color: isDark
+                              ? AppColors.githubDarkBorder
+                              : AppColors.githubLightBorder,
+                          width: 1,
+                        ),
+                      ),
+                    ),
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // ドラッグハンドル
-                        Center(
-                          child: Container(
-                            width: 40,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: AppColors.textColor(
-                                brightness,
-                              ).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(2),
-                            ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 12),
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.githubDarkBorder
+                                : AppColors.githubLightBorder,
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
-                        const SizedBox(height: 24),
-
-                        // 共通コンテンツを使用
-                        ContributionDetailContent(
-                          date: _currentDate,
-                          count: _currentCount,
-                          showCloseButton: true,
-                          onPreviousDay: _canMoveToPreviousDay()
-                              ? () => _moveToDay(
-                                  _currentDate.subtract(
-                                    const Duration(days: 1),
-                                  ),
-                                )
-                              : null,
-                          onNextDay: _canMoveToNextDay()
-                              ? () => _moveToDay(
-                                  _currentDate.add(const Duration(days: 1)),
-                                )
-                              : null,
+                        // コンテンツ
+                        Expanded(
+                          child: SingleChildScrollView(
+                            controller: scrollController,
+                            padding: const EdgeInsets.all(24),
+                            child: ContributionDetailContent(
+                              date: date,
+                              count: count,
+                              contributionMap: contributionMap,
+                              yearStart: yearStart,
+                              yearEnd: yearEnd,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
+
+/// モーダル用のジオメトリックパターンを描画するCustomPainter
+class _ModalGeometricPatternPainter extends CustomPainter {
+  final bool isDark;
+
+  _ModalGeometricPatternPainter({required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // グラデーション背景
+    final gradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: isDark
+          ? [
+              AppColors.darkGrey.withValues(alpha: 0.3),
+              AppColors.darkGreenBlack.withValues(alpha: 0.3),
+              AppColors.darkGreen.withValues(alpha: 0.3),
+            ]
+          : [
+              AppColors.grey(200).withValues(alpha: 0.2),
+              AppColors.grey(100).withValues(alpha: 0.2),
+            ],
+      stops: const [0.0, 0.5, 1.0],
+    );
+
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final paint = Paint()..shader = gradient.createShader(rect);
+    canvas.drawRect(rect, paint);
+
+    // 網代模様（斜めの平行線）
+    _drawAjiroPattern(canvas, size);
+
+    // 麻の葉模様（六角形の中心から放射状に線を引く）
+    _drawAsanohaPattern(canvas, size);
+  }
+
+  /// 網代模様: 斜めの平行線を複数方向に重ねる
+  void _drawAjiroPattern(Canvas canvas, Size size) {
+    final linePaint = Paint()
+      ..color = isDark
+          ? AppColors.terminalGreen.withValues(alpha: 0.15)
+          : AppColors.terminalGreen.withValues(alpha: 0.12)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    final spacing = 50.0;
+    final diagonalLength = size.width + size.height;
+
+    // 右斜め下方向の平行線
+    for (double i = -diagonalLength; i < diagonalLength; i += spacing) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height * 0.577, size.height),
+        linePaint,
+      );
+    }
+
+    // 左斜め下方向の平行線
+    final leftLinePaint = Paint()
+      ..color = isDark
+          ? AppColors.terminalGreen.withValues(alpha: 0.12)
+          : AppColors.terminalGreen.withValues(alpha: 0.10)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    for (double i = -diagonalLength; i < diagonalLength; i += spacing) {
+      canvas.drawLine(
+        Offset(size.width + i, 0),
+        Offset(size.width + i - size.height * 0.577, size.height),
+        leftLinePaint,
+      );
+    }
+  }
+
+  /// 麻の葉模様: 六角形の中心から各頂点に向かって線を引く
+  void _drawAsanohaPattern(Canvas canvas, Size size) {
+    final asanohaPaint = Paint()
+      ..color = isDark
+          ? AppColors.terminalGreen.withValues(alpha: 0.20)
+          : AppColors.terminalGreen.withValues(alpha: 0.18)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+
+    final hexSize = 100.0;
+    final hexRadius = hexSize / 2;
+    final hexHeight = hexSize * math.sqrt(3) / 2; // 正六角形の高さ
+
+    final cols = (size.width / hexSize).ceil() + 2;
+    final rows = (size.height / hexHeight).ceil() + 2;
+
+    for (int row = 0; row < rows; row++) {
+      for (int col = 0; col < cols; col++) {
+        final x = col * hexSize + (row % 2 == 0 ? 0 : hexSize / 2);
+        final y = row * hexHeight;
+        final center = Offset(x, y);
+
+        final vertices = <Offset>[];
+        for (int i = 0; i < 6; i++) {
+          final angle = (math.pi / 3) * i - math.pi / 6;
+          final vertexX = center.dx + hexRadius * math.cos(angle);
+          final vertexY = center.dy + hexRadius * math.sin(angle);
+          vertices.add(Offset(vertexX, vertexY));
+        }
+
+        for (final vertex in vertices) {
+          canvas.drawLine(center, vertex, asanohaPaint);
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ModalGeometricPatternPainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
+}
+

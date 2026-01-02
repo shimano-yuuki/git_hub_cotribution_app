@@ -13,6 +13,7 @@ class MainNavigation extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final selectedPos = useState(0);
+    final isLoading = useState<bool>(false);
     final navigationController = useMemoized(
       () => CircularBottomNavigationController(0),
     );
@@ -56,12 +57,44 @@ class MainNavigation extends HookWidget {
       ),
     ];
 
-    final screens = [const ProfileScreen(), const SettingsScreen()];
+    final screens = [
+      ProfileScreen(
+        onLoadingChanged: (loading) {
+          isLoading.value = loading;
+        },
+      ),
+      const SettingsScreen(),
+    ];
 
     return Scaffold(
       extendBody: true,
-      body: GeometricBackground(child: screens[selectedPos.value]),
-      bottomNavigationBar: CircularBottomNavigation(
+      body: GeometricBackground(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.1, 0.0),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                )),
+                child: child,
+              ),
+            );
+          },
+          child: Container(
+            key: ValueKey<int>(selectedPos.value),
+            child: screens[selectedPos.value],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Opacity(
+        opacity: isLoading.value ? 0.5 : 1.0,
+        child: CircularBottomNavigation(
         tabItems,
         controller: navigationController,
         selectedPos: selectedPos.value,
@@ -74,6 +107,7 @@ class MainNavigation extends HookWidget {
           selectedPos.value = selectedPosValue ?? 0;
           navigationController.value = selectedPos.value;
         },
+        ),
       ),
     );
   }
