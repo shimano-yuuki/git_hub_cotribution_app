@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/glass_container.dart';
+import '../../../../shared/widgets/animated_fade_in.dart';
 import '../providers/token_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/error_message_widget.dart';
@@ -75,23 +76,32 @@ class SettingsScreen extends HookWidget {
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        child: GlassContainer(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _TokenInputForm(
-                tokenState: tokenState,
-                textColor: textColor,
-                iconColor: iconColor,
-              ),
-              const SizedBox(height: 32),
-              _ThemeModeSelector(
-                themeState: themeState,
-                textColor: textColor,
-                iconColor: iconColor,
-              ),
-            ],
+        child: AnimatedFadeSlideIn(
+          delay: 100.0,
+          child: GlassContainer(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AnimatedFadeSlideIn(
+                  delay: 200.0,
+                  child: _TokenInputForm(
+                    tokenState: tokenState,
+                    textColor: textColor,
+                    iconColor: iconColor,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                AnimatedFadeSlideIn(
+                  delay: 300.0,
+                  child: _ThemeModeSelector(
+                    themeState: themeState,
+                    textColor: textColor,
+                    iconColor: iconColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -183,11 +193,15 @@ class _TokenInputForm extends HookWidget {
         ),
         if (tokenState.error != null) ...[
           const SizedBox(height: 16),
-          ErrorMessageWidget(message: tokenState.error!),
+          AnimatedFadeIn(
+            child: ErrorMessageWidget(message: tokenState.error!),
+          ),
         ],
         if (tokenState.isSaved && tokenState.error == null) ...[
           const SizedBox(height: 16),
-          const SuccessMessageWidget(message: 'トークンが正常に保存されました'),
+          AnimatedFadeIn(
+            child: const SuccessMessageWidget(message: 'トークンが正常に保存されました'),
+          ),
         ],
         const SizedBox(height: 24),
         SaveButton(
