@@ -21,6 +21,7 @@ import '../../../../shared/widgets/statistics_button.dart';
 import '../../../../shared/widgets/geometric_background.dart';
 import '../../domain/usecases/calculate_contribution_statistics_usecase.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 /// 他ユーザーのContribution画面
 class OtherUserContributionScreen extends HookWidget {
@@ -260,119 +261,123 @@ class OtherUserContributionScreen extends HookWidget {
                       if (user.value != null && !isLoading.value)
                         const SizedBox(height: 24),
                       // Contributionカレンダーセクション
-                      AnimatedFadeIn(
-                        delay: 150.0,
-                        child: GlassContainer(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  AnimatedFadeIn(
-                                    delay: 200.0,
-                                    child: Text(
-                                      'Contribution Calendar',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: textColor,
+                      if (!isLoading.value)
+                        AnimatedFadeIn(
+                          delay: 150.0,
+                          child: GlassContainer(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 16),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    AnimatedFadeIn(
+                                      delay: 200.0,
+                                      child: Text(
+                                        'Contribution Calendar',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: textColor,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              // エラーメッセージ表示
-                              if (error.value != null && !isLoading.value)
-                                AnimatedFadeIn(
-                                  delay: 300.0,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 16),
-                                    child: Stack(
-                                      children: [
-                                        ErrorDisplayWidget(
-                                          failure: error.value!,
-                                          onRetry: isRetrying.value
-                                              ? null
-                                              : retryFetch,
-                                        ),
-                                        if (isRetrying.value)
-                                          Positioned.fill(
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.black.withValues(
-                                                  alpha: 0.3,
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+                                // エラーメッセージ表示
+                                if (error.value != null && !isLoading.value)
+                                  AnimatedFadeIn(
+                                    delay: 300.0,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 16,
+                                      ),
+                                      child: Stack(
+                                        children: [
+                                          ErrorDisplayWidget(
+                                            failure: error.value!,
+                                            onRetry: isRetrying.value
+                                                ? null
+                                                : retryFetch,
+                                          ),
+                                          if (isRetrying.value)
+                                            Positioned.fill(
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.3),
+                                                  borderRadius:
+                                                      BorderRadius.circular(24),
                                                 ),
-                                                borderRadius:
-                                                    BorderRadius.circular(24),
-                                              ),
-                                              child: const Center(
-                                                child: ThemedLoadingAnimation(
-                                                  size: 40.0,
+                                                child: const Center(
+                                                  child: ThemedLoadingAnimation(
+                                                    size: 40.0,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              // カレンダーウィジェットまたはエラー表示
-                              if (!isLoading.value &&
-                                  error.value == null &&
-                                  contributions.value.isNotEmpty)
-                                AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 400),
-                                  transitionBuilder: (child, animation) {
-                                    return FadeTransition(
-                                      opacity: animation,
-                                      child: child,
-                                    );
-                                  },
-                                  child: ContributionCalendarWidget(
-                                    key: const ValueKey('calendar'),
-                                    contributions: contributions.value,
-                                    initialYear: selectedYear.value,
-                                    onYearChanged: (newYear) {
-                                      selectedYear.value = newYear;
-                                    },
-                                  ),
-                                )
-                              else if (!isLoading.value &&
-                                  error.value == null &&
-                                  contributions.value.isEmpty)
-                                AnimatedFadeIn(
-                                  delay: 300.0,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 16),
-                                    child: ErrorDisplayWidget(
-                                      failure: const CacheFailure(
-                                        'データが見つかりませんでした。',
+                                        ],
                                       ),
-                                      onRetry: isRetrying.value
-                                          ? null
-                                          : retryFetch,
                                     ),
                                   ),
-                                ),
-                              const SizedBox(height: 16),
-                              // 統計データ確認ボタン
-                              if (!isLoading.value &&
-                                  contributions.value.isNotEmpty)
-                                StatisticsButton(
-                                  statistics: calculateStatisticsUseCase(
-                                    contributions.value,
+                                // カレンダーウィジェットまたはエラー表示
+                                if (!isLoading.value &&
+                                    error.value == null &&
+                                    contributions.value.isNotEmpty)
+                                  AnimatedSwitcher(
+                                    duration: const Duration(milliseconds: 400),
+                                    transitionBuilder: (child, animation) {
+                                      return FadeTransition(
+                                        opacity: animation,
+                                        child: child,
+                                      );
+                                    },
+                                    child: ContributionCalendarWidget(
+                                      key: const ValueKey('calendar'),
+                                      contributions: contributions.value,
+                                      initialYear: selectedYear.value,
+                                      onYearChanged: (newYear) {
+                                        selectedYear.value = newYear;
+                                      },
+                                    ),
+                                  )
+                                else if (!isLoading.value &&
+                                    error.value == null &&
+                                    contributions.value.isEmpty)
+                                  AnimatedFadeIn(
+                                    delay: 300.0,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 16,
+                                      ),
+                                      child: ErrorDisplayWidget(
+                                        failure: const CacheFailure(
+                                          'データが見つかりませんでした。',
+                                        ),
+                                        onRetry: isRetrying.value
+                                            ? null
+                                            : retryFetch,
+                                      ),
+                                    ),
                                   ),
-                                  year: selectedYear.value,
-                                ),
-                            ],
+                                const SizedBox(height: 16),
+                                // 統計データ確認ボタン
+                                if (!isLoading.value &&
+                                    contributions.value.isNotEmpty)
+                                  StatisticsButton(
+                                    statistics: calculateStatisticsUseCase(
+                                      contributions.value,
+                                    ),
+                                    year: selectedYear.value,
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
                       const SizedBox(height: 64),
                     ],
                   ),
@@ -380,7 +385,12 @@ class OtherUserContributionScreen extends HookWidget {
               ),
               // ローディングインジケーター（初回読み込み時のみ）
               if (isLoading.value && !isRefreshing.value)
-                Center(child: ThemedLoadingAnimation(size: 80.0)),
+                Center(
+                  child: SpinKitFadingCube(
+                    color: AppColors.terminalGreen,
+                    size: 80.0,
+                  ),
+                ),
             ],
           ),
         ),
