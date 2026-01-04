@@ -15,11 +15,7 @@ class ThemedLoadingAnimation extends StatelessWidget {
     final brightness = Theme.of(context).brightness;
 
     // カラーが指定されていない場合は、テーマに応じたカラーを使用
-    final animationColor =
-        color ??
-        (brightness == Brightness.dark
-            ? AppColors.terminalGreen
-            : AppColors.terminalGreen);
+    final animationColor = color ?? AppColors.accentColor(brightness);
 
     return LoadingAnimationWidget.progressiveDots(
       color: animationColor,

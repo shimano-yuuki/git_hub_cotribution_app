@@ -186,7 +186,7 @@ class _ModalGeometricPatternPainter extends CustomPainter {
     final linePaint = Paint()
       ..color = isDark
           ? AppColors.terminalGreen.withValues(alpha: 0.15)
-          : AppColors.terminalGreen.withValues(alpha: 0.12)
+          : AppColors.githubGreen.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -206,7 +206,7 @@ class _ModalGeometricPatternPainter extends CustomPainter {
     final leftLinePaint = Paint()
       ..color = isDark
           ? AppColors.terminalGreen.withValues(alpha: 0.12)
-          : AppColors.terminalGreen.withValues(alpha: 0.10)
+          : AppColors.githubGreen.withValues(alpha: 0.10)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -224,7 +224,7 @@ class _ModalGeometricPatternPainter extends CustomPainter {
     final asanohaPaint = Paint()
       ..color = isDark
           ? AppColors.terminalGreen.withValues(alpha: 0.20)
-          : AppColors.terminalGreen.withValues(alpha: 0.18)
+          : AppColors.githubGreen.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 

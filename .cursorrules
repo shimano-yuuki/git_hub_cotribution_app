@@ -152,3 +152,340 @@ lib/
 
 **重要**: このプロジェクトでコードを実装・修正する際は、必ずこの Feature-First アーキテクチャに従ってください。
 
+
+
+
+
+# Flutter Test Code Development Standards
+
+あなたはFlutterの経験豊富な開発者です。以下の基準に従ってテストコードを作成してください。
+
+## 基本原則
+
+1. **テストファースト**: 実装コードの前にテストコードを書く
+2. **AAA パターン**: Arrange（準備）、Act（実行）、Assert（検証）を明確に分ける
+3. **1テスト1検証**: 1つのテストで1つの事柄のみを検証する
+4. **独立性**: テスト間で依存関係を持たせない
+5. **再現性**: 何度実行しても同じ結果になる
+
+## カバレッジ目標
+
+- 全体カバレッジ: 80%以上
+- ビジネスロジック: 90%以上
+- UIウィジェット: 70%以上
+- 重要な機能: 100%
+
+## テストの種類と役割
+
+### Unit Test（単体テスト）
+**対象**: モデル、サービス、ユーティリティ、ビジネスロジック
+
+**必須テストケース**:
+- 正常系: 期待通りの入力で期待通りの出力
+- 異常系: 不正な入力でエラーハンドリング
+- 境界値: 最小値、最大値、境界値
+- null/空値: null、空文字列、空リストの処理
+
+**命名規則**:
+```dart
+test('メソッド名_条件_期待される結果', () {
+  // 例: 'add_positiveNumbers_returnsSum'
+});
+```
+
+### Widget Test（ウィジェットテスト）
+**対象**: UIコンポーネント、画面
+
+**必須テストケース**:
+- レンダリング: ウィジェットが正しく表示される
+- ユーザー操作: タップ、スクロール、入力などの動作
+- 状態変化: 状態が変わった時の表示更新
+- バリデーション: 入力検証の動作
+
+**命名規則**:
+```dart
+testWidgets('ウィジェット名_動作_期待される結果', (tester) async {
+  // 例: 'LoginButton_whenTapped_showsLoadingIndicator'
+});
+```
+
+### Integration Test（統合テスト）
+**対象**: エンドツーエンドのユーザーフロー
+
+**必須テストケース**:
+- 主要なユーザーフロー
+- 認証フロー
+- データの永続化と復元
+
+## コーディング規則
+
+### テストファイル構成
+```dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+
+// テスト対象のインポート
+import 'package:your_app/...';
+
+// Mockの生成（必要な場合）
+@GenerateMocks([ClassName])
+void main() {
+  group('クラス名/機能名のグループ', () {
+    // 共通の変数
+    late TargetClass target;
+    late MockDependency mockDependency;
+
+    // 各テストの前に実行
+    setUp(() {
+      mockDependency = MockDependency();
+      target = TargetClass(dependency: mockDependency);
+    });
+
+    // 各テストの後に実行（必要な場合）
+    tearDown(() {
+      // クリーンアップ処理
+    });
+
+    group('メソッド名/機能名のサブグループ', () {
+      test('具体的なテストケース1', () {
+        // Arrange: テスト準備
+        final input = 'test input';
+        final expected = 'expected output';
+
+        // Act: テスト実行
+        final result = target.method(input);
+
+        // Assert: 検証
+        expect(result, expected);
+      });
+
+      test('具体的なテストケース2', () {
+        // ...
+      });
+    });
+  });
+}
+```
+
+### Mockの使用規則
+```dart
+// 1. 依存関係は抽象クラス/インターフェースにする
+abstract class ApiClient {
+  Future get(String url);
+}
+
+// 2. Mockアノテーションで生成
+@GenerateMocks([ApiClient])
+
+// 3. テスト内でモックの振る舞いを定義
+test('example test', () {
+  // 戻り値を設定
+  when(mockClient.get(any))
+      .thenAnswer((_) async => Response('data', 200));
+
+  // テスト実行
+  final result = await service.fetchData();
+
+  // 呼び出しを検証
+  verify(mockClient.get('https://api.example.com/data')).called(1);
+  
+  // 結果を検証
+  expect(result, 'data');
+});
+```
+
+### Widget Testのベストプラクティス
+```dart
+testWidgets('example widget test', (tester) async {
+  // 1. Widget Keyを使用して要素を特定
+  const emailFieldKey = Key('email_field');
+  const submitButtonKey = Key('submit_button');
+
+  // 2. MaterialAppでラップ
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: YourWidget(),
+      ),
+    ),
+  );
+
+  // 3. 要素の存在確認
+  expect(find.byKey(emailFieldKey), findsOneWidget);
+
+  // 4. ユーザー操作をシミュレート
+  await tester.enterText(find.byKey(emailFieldKey), 'test@example.com');
+  await tester.tap(find.byKey(submitButtonKey));
+
+  // 5. アニメーションやステート更新を待つ
+  await tester.pump(); // 1フレーム進める
+  await tester.pumpAndSettle(); // すべてのアニメーション完了まで待つ
+
+  // 6. 結果を検証
+  expect(find.text('Success'), findsOneWidget);
+});
+```
+
+## エラーハンドリングのテスト
+```dart
+group('Error Handling', () {
+  test('throws specific exception on error', () {
+    // expect with throwsA
+    expect(
+      () => target.methodThatThrows(),
+      throwsA(isA()),
+    );
+  });
+
+  test('handles async errors correctly', () async {
+    // expect with throwsA for async
+    expect(
+      target.asyncMethodThatThrows(),
+      throwsA(isA()),
+    );
+  });
+
+  test('error message is correct', () {
+    try {
+      target.methodThatThrows();
+      fail('Exception should be thrown');
+    } catch (e) {
+      expect(e.toString(), contains('expected error message'));
+    }
+  });
+});
+```
+
+## テストデータの管理
+```dart
+// test/fixtures/test_data.dart
+class TestData {
+  static User validUser() => User(
+    id: 1,
+    name: 'Test User',
+    email: 'test@example.com',
+    age: 25,
+  );
+
+  static User invalidUser() => User(
+    id: -1,
+    name: '',
+    email: 'invalid-email',
+    age: -5,
+  );
+
+  static List userList() => [
+    validUser(),
+    User(id: 2, name: 'User 2', email: 'user2@test.com', age: 30),
+    User(id: 3, name: 'User 3', email: 'user3@test.com', age: 15),
+  ];
+}
+```
+
+## 避けるべきアンチパターン
+
+❌ **やってはいけないこと**:
+```dart
+// テスト間で状態を共有
+var sharedState = SomeObject(); // NG
+
+// 複数の検証を1つのテストに詰め込む
+test('does everything', () {
+  // 複数の無関係な検証 - NG
+});
+
+// 具体的でない説明
+test('test1', () {}); // NG
+
+// setUp内で複雑なロジック
+setUp(() {
+  // 複雑な初期化ロジック - NG
+});
+
+// テスト内でsleep/delayを使う
+await Future.delayed(Duration(seconds: 1)); // NG
+```
+
+✅ **推奨されること**:
+```dart
+// 各テストで新しいインスタンスを作成
+setUp(() {
+  target = TargetClass();
+});
+
+// 1つのテストで1つの検証
+test('validates email format correctly', () {
+  expect(validator.isValidEmail('test@test.com'), true);
+});
+
+// 説明的なテスト名
+test('getUserById_whenUserExists_returnsUser', () {});
+
+// pumpを使ってアニメーションを制御
+await tester.pumpAndSettle();
+```
+
+## 出力フォーマット
+
+テストコードを作成する際は、以下の形式で出力してください:
+
+1. **ファイルパス**: `test/path/to/file_test.dart`
+2. **完全なテストコード**: 実行可能な完全なコード
+3. **テストケースの説明**: 何をテストしているか
+4. **カバレッジ情報**: このテストでカバーされる範囲
+
+## 実装例
+
+実装コードを提示された場合:
+1. ファイルパスを確認
+2. 必要なテストケースをリストアップ
+3. 上記の規則に従ってテストコードを作成
+4. エッジケースも含める
+5. Mockが必要な依存関係を特定
+
+質問がある場合は明確にし、テストコードは実行可能な状態で提供してください。
+```
+
+---
+
+## Cursor で使う際の具体的なプロンプト例
+
+### プロンプト1: 新規テスト作成
+```
+以下のFlutterクラスに対して、上記の「Flutter Test Code Development Standards」に従って
+完全なテストコードを作成してください。
+
+[実装コードを貼り付け]
+
+以下を含めてください:
+- 正常系のテスト
+- 異常系のテスト
+- 境界値のテスト
+- 必要に応じてMockの使用
+```
+
+### プロンプト2: 既存テストの改善
+```
+以下のテストコードを「Flutter Test Code Development Standards」に基づいてレビューし、
+改善案を提示してください。
+
+[既存のテストコードを貼り付け]
+
+特に以下の点を確認してください:
+- テストカバレッジの不足
+- アンチパターンの使用
+- 命名規則の遵守
+```
+
+### プロンプト3: Widget テスト作成
+```
+以下のFlutterウィジェットに対して、「Flutter Test Code Development Standards」の
+Widget Test規則に従ってテストコードを作成してください。
+
+[Widgetコードを貼り付け]
+
+以下のテストケースを含めてください:
+- レンダリングテスト
+- ユーザーインタラクションテスト
+- 状態変化のテスト

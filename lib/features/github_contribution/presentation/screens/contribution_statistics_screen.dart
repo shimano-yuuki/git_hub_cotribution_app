@@ -131,14 +131,14 @@ class ContributionStatisticsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: highlight
-                  ? AppColors.terminalGreen.withValues(alpha: 0.2)
+                  ? AppColors.accentColor(brightness).withValues(alpha: 0.2)
                   : textColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               icon,
               color: highlight
-                  ? AppColors.terminalGreen
+                  ? AppColors.accentColor(brightness)
                   : textColor.withValues(alpha: 0.7),
               size: 24,
             ),
@@ -162,7 +162,7 @@ class ContributionStatisticsScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: highlight ? AppColors.terminalGreen : textColor,
+                    color: highlight ? AppColors.accentColor(brightness) : textColor,
                   ),
                 ),
               ],

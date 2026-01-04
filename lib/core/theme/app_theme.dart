@@ -7,7 +7,7 @@ class AppTheme {
       useMaterial3: false,
       colorScheme: ColorScheme.light(
         primary: AppColors.grey(700),
-        secondary: AppColors.terminalGreen,
+        secondary: AppColors.githubGreen,
         surface: AppColors.githubLightBg,
         error: AppColors.githubErrorLight,
         onPrimary: AppColors.white,
@@ -28,7 +28,7 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: true,
         showUnselectedLabels: true,
-        selectedItemColor: AppColors.terminalGreen,
+        selectedItemColor: AppColors.githubGreen,
         unselectedItemColor: AppColors.githubUnselectedLight,
         backgroundColor: AppColors.white,
       ),

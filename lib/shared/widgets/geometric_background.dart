@@ -76,7 +76,7 @@ class _GeometricPatternPainter extends CustomPainter {
     final linePaint = Paint()
       ..color = isDark
           ? AppColors.terminalGreen.withValues(alpha: 0.25)
-          : AppColors.terminalGreen.withValues(alpha: 0.20)
+          : AppColors.githubGreen.withValues(alpha: 0.20)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
@@ -98,7 +98,7 @@ class _GeometricPatternPainter extends CustomPainter {
     final leftLinePaint = Paint()
       ..color = isDark
           ? AppColors.terminalGreen.withValues(alpha: 0.20)
-          : AppColors.terminalGreen.withValues(alpha: 0.18)
+          : AppColors.githubGreen.withValues(alpha: 0.18)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
@@ -116,7 +116,7 @@ class _GeometricPatternPainter extends CustomPainter {
     final asanohaPaint = Paint()
       ..color = isDark
           ? AppColors.terminalGreen.withValues(alpha: 0.30)
-          : AppColors.terminalGreen.withValues(alpha: 0.25)
+          : AppColors.githubGreen.withValues(alpha: 0.25)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
