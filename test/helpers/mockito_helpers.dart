@@ -11,12 +11,17 @@ void setupMockitoDummies() {
   provideDummy<Either<Failure, bool>>(const Right<Failure, bool>(false));
 
   // Either<Failure, User>のダミー値
-  provideDummy<Either<Failure, User>>(Right<Failure, User>(TestData.validUser()));
+  provideDummy<Either<Failure, User>>(
+    Right<Failure, User>(TestData.validUser()),
+  );
 
   // Either<Failure, List<User>>のダミー値
-  provideDummy<Either<Failure, List<User>>>(Right<Failure, List<User>>(<User>[]));
+  provideDummy<Either<Failure, List<User>>>(
+    Right<Failure, List<User>>(<User>[]),
+  );
 
   // Either<Failure, List<Contribution>>のダミー値
-  provideDummy<Either<Failure, List<Contribution>>>(Right<Failure, List<Contribution>>(<Contribution>[]));
+  provideDummy<Either<Failure, List<Contribution>>>(
+    Right<Failure, List<Contribution>>(<Contribution>[]),
+  );
 }
-
