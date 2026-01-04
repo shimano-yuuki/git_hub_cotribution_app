@@ -61,7 +61,10 @@ class CalculateContributionStatisticsUseCase {
         .fold<int>(0, (sum, contribution) => sum + contribution.count);
 
     // ストリークを計算
-    final streakResult = _calculateStreaks(sortedContributions, todayNormalized);
+    final streakResult = _calculateStreaks(
+      sortedContributions,
+      todayNormalized,
+    );
 
     return ContributionStatistics(
       totalContributions: totalContributions,
@@ -107,7 +110,8 @@ class CalculateContributionStatisticsUseCase {
     }
 
     // 今日がContributionがない場合は、昨日から計算
-    if (currentStreak == 0 && contributionDates.contains(today.subtract(const Duration(days: 1)))) {
+    if (currentStreak == 0 &&
+        contributionDates.contains(today.subtract(const Duration(days: 1)))) {
       checkDate = today.subtract(const Duration(days: 1));
       while (contributionDates.contains(checkDate)) {
         currentStreak++;
@@ -164,6 +168,3 @@ class _StreakResult {
     required this.longestStreak,
   });
 }
-
-
-

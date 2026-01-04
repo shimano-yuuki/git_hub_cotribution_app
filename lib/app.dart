@@ -14,7 +14,8 @@ class App extends StatefulWidget {
 }
 
 class _AppState extends State<App> {
-  final themeRepository = ThemeRepositoryImpl(ThemeLocalDataSource()) as ThemeRepository;
+  final themeRepository =
+      ThemeRepositoryImpl(ThemeLocalDataSource()) as ThemeRepository;
 
   @override
   void initState() {

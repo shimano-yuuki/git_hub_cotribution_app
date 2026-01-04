@@ -14,7 +14,6 @@ import '../../../../helpers/mockito_helpers.dart';
 void main() {
   setupMockitoDummies();
 
-
   group('ValidateTokenUseCase', () {
     late ValidateTokenUseCase useCase;
     late MockGithubRepository mockRepository;
@@ -28,8 +27,9 @@ void main() {
       test('有効なtokenの場合、trueを返す', () async {
         // Arrange
         const token = 'valid_token';
-        when(mockRepository.validateToken(token))
-            .thenAnswer((_) async => const Right(true));
+        when(
+          mockRepository.validateToken(token),
+        ).thenAnswer((_) async => const Right(true));
 
         // Act
         final result = await useCase.call(token);
@@ -47,8 +47,9 @@ void main() {
       test('無効なtokenの場合、falseを返す', () async {
         // Arrange
         const token = 'invalid_token';
-        when(mockRepository.validateToken(token))
-            .thenAnswer((_) async => const Right(false));
+        when(
+          mockRepository.validateToken(token),
+        ).thenAnswer((_) async => const Right(false));
 
         // Act
         final result = await useCase.call(token);
@@ -73,13 +74,10 @@ void main() {
 
         // Assert
         expect(result.isLeft(), true);
-        result.fold(
-          (failure) {
-            expect(failure, isA<AuthenticationFailure>());
-            expect(failure.message, 'トークンが入力されていません');
-          },
-          (isValid) => fail('エラーが発生すべきです'),
-        );
+        result.fold((failure) {
+          expect(failure, isA<AuthenticationFailure>());
+          expect(failure.message, 'トークンが入力されていません');
+        }, (isValid) => fail('エラーが発生すべきです'));
         verifyNever(mockRepository.validateToken(any));
       });
 
@@ -87,21 +85,19 @@ void main() {
         // Arrange
         const token = 'valid_token';
         const failure = ServerFailure('サーバーエラーが発生しました');
-        when(mockRepository.validateToken(token))
-            .thenAnswer((_) async => const Left(failure));
+        when(
+          mockRepository.validateToken(token),
+        ).thenAnswer((_) async => const Left(failure));
 
         // Act
         final result = await useCase.call(token);
 
         // Assert
         expect(result.isLeft(), true);
-        result.fold(
-          (failureResult) {
-            expect(failureResult, isA<ServerFailure>());
-            expect(failureResult.message, 'サーバーエラーが発生しました');
-          },
-          (isValid) => fail('エラーが発生すべきです'),
-        );
+        result.fold((failureResult) {
+          expect(failureResult, isA<ServerFailure>());
+          expect(failureResult.message, 'サーバーエラーが発生しました');
+        }, (isValid) => fail('エラーが発生すべきです'));
         verify(mockRepository.validateToken(token)).called(1);
       });
 
@@ -109,21 +105,19 @@ void main() {
         // Arrange
         const token = 'valid_token';
         const failure = NetworkFailure('ネットワークエラーが発生しました');
-        when(mockRepository.validateToken(token))
-            .thenAnswer((_) async => const Left(failure));
+        when(
+          mockRepository.validateToken(token),
+        ).thenAnswer((_) async => const Left(failure));
 
         // Act
         final result = await useCase.call(token);
 
         // Assert
         expect(result.isLeft(), true);
-        result.fold(
-          (failureResult) {
-            expect(failureResult, isA<NetworkFailure>());
-            expect(failureResult.message, 'ネットワークエラーが発生しました');
-          },
-          (isValid) => fail('エラーが発生すべきです'),
-        );
+        result.fold((failureResult) {
+          expect(failureResult, isA<NetworkFailure>());
+          expect(failureResult.message, 'ネットワークエラーが発生しました');
+        }, (isValid) => fail('エラーが発生すべきです'));
         verify(mockRepository.validateToken(token)).called(1);
       });
 
@@ -131,21 +125,19 @@ void main() {
         // Arrange
         const token = 'invalid_token';
         const failure = AuthenticationFailure('認証に失敗しました');
-        when(mockRepository.validateToken(token))
-            .thenAnswer((_) async => const Left(failure));
+        when(
+          mockRepository.validateToken(token),
+        ).thenAnswer((_) async => const Left(failure));
 
         // Act
         final result = await useCase.call(token);
 
         // Assert
         expect(result.isLeft(), true);
-        result.fold(
-          (failureResult) {
-            expect(failureResult, isA<AuthenticationFailure>());
-            expect(failureResult.message, '認証に失敗しました');
-          },
-          (isValid) => fail('エラーが発生すべきです'),
-        );
+        result.fold((failureResult) {
+          expect(failureResult, isA<AuthenticationFailure>());
+          expect(failureResult.message, '認証に失敗しました');
+        }, (isValid) => fail('エラーが発生すべきです'));
         verify(mockRepository.validateToken(token)).called(1);
       });
     });
@@ -154,8 +146,9 @@ void main() {
       test('非常に長いtokenで呼び出せる（リポジトリで検証される）', () async {
         // Arrange
         final longToken = 'a' * 1000;
-        when(mockRepository.validateToken(longToken))
-            .thenAnswer((_) async => const Right(true));
+        when(
+          mockRepository.validateToken(longToken),
+        ).thenAnswer((_) async => const Right(true));
 
         // Act
         final result = await useCase.call(longToken);
@@ -167,4 +160,3 @@ void main() {
     });
   });
 }
-

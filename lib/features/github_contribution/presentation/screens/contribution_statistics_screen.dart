@@ -162,7 +162,9 @@ class ContributionStatisticsScreen extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: highlight ? AppColors.accentColor(brightness) : textColor,
+                    color: highlight
+                        ? AppColors.accentColor(brightness)
+                        : textColor,
                   ),
                 ),
               ],

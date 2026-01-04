@@ -11,11 +11,3 @@ class SaveThemeModeUseCase {
     await repository.saveThemeMode(themeMode);
   }
 }
-
-
-
-
-
-
-
-

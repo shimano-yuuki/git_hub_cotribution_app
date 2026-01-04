@@ -96,6 +96,3 @@ class ErrorLogEntry {
     return buffer.toString();
   }
 }
-
-
-

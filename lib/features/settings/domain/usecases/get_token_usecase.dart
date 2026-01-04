@@ -8,17 +8,9 @@ class GetTokenUseCase {
   GetTokenUseCase(this.repository);
 
   /// 保存されているトークンを取得する
-  /// 
+  ///
   /// Returns [Token] if exists, null otherwise
   Future<Token?> call() async {
     return await repository.getToken();
   }
 }
-
-
-
-
-
-
-
-

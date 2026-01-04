@@ -122,7 +122,7 @@ class _ContributionDetailContentState extends State<ContributionDetailContent> {
             const SizedBox(width: 12),
             Text(
               _currentCount > 0
-                  ? '${_currentCount} contributions'
+                  ? '$_currentCount contributions'
                   : 'No contributions',
               style: TextStyle(fontSize: 16, color: textColor),
             ),

@@ -67,4 +67,3 @@ class ThemeState {
     required this.changeThemeMode,
   });
 }
-
