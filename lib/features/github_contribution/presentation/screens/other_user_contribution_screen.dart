@@ -387,7 +387,7 @@ class OtherUserContributionScreen extends HookWidget {
               if (isLoading.value && !isRefreshing.value)
                 Center(
                   child: SpinKitFadingCube(
-                    color: AppColors.terminalGreen,
+                    color: AppColors.accentColor(brightness),
                     size: 80.0,
                   ),
                 ),

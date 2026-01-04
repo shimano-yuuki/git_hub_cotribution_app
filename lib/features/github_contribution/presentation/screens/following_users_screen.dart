@@ -357,7 +357,7 @@ class FollowingUsersScreen extends HookWidget {
                             Padding(
                               padding: const EdgeInsets.only(right: 16),
                               child: SpinKitFadingCube(
-                                color: AppColors.terminalGreen,
+                                color: AppColors.accentColor(brightness),
                                 size: 24.0,
                               ),
                             ),
@@ -372,7 +372,7 @@ class FollowingUsersScreen extends HookWidget {
                             Padding(
                               padding: const EdgeInsets.only(right: 16),
                               child: SpinKitFadingCube(
-                                color: AppColors.terminalGreen,
+                                color: AppColors.accentColor(brightness),
                                 size: 24.0,
                               ),
                             ),
@@ -413,7 +413,9 @@ class FollowingUsersScreen extends HookWidget {
                                     ),
                                     child: Center(
                                       child: SpinKitFadingCube(
-                                        color: AppColors.terminalGreen,
+                                        color: AppColors.accentColor(
+                                          brightness,
+                                        ),
                                         size: 40.0,
                                       ),
                                     ),
@@ -656,7 +658,9 @@ class _TabButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.terminalGreen.withValues(alpha: 0.2)
+              ? AppColors.accentColor(
+                  Theme.of(context).brightness,
+                ).withValues(alpha: 0.2)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
@@ -664,7 +668,9 @@ class _TabButton extends StatelessWidget {
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: isSelected ? AppColors.terminalGreen : textColor,
+            color: isSelected
+                ? AppColors.accentColor(Theme.of(context).brightness)
+                : textColor,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             fontSize: 14,
           ),
@@ -705,7 +711,7 @@ class _RankingItem extends StatelessWidget {
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: ranking.rank <= 3
-                      ? AppColors.terminalGreen
+                      ? AppColors.accentColor(Theme.of(context).brightness)
                       : textColor.withValues(alpha: 0.7),
                 ),
               ),
@@ -757,7 +763,7 @@ class _RankingItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.terminalGreen,
+                    color: AppColors.accentColor(Theme.of(context).brightness),
                   ),
                 ),
                 Text(

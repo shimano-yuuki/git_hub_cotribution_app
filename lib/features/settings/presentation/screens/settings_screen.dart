@@ -173,7 +173,10 @@ class _TokenInputForm extends HookWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(color: AppColors.terminalGreen, width: 2),
+              borderSide: BorderSide(
+                color: AppColors.accentColor(brightness),
+                width: 2,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),

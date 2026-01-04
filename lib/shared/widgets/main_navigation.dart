@@ -31,7 +31,7 @@ class MainNavigation extends HookWidget {
     final barBackgroundColor = isDark
         ? AppColors.githubDarkSurface
         : AppColors.white;
-    final selectedIconColor = AppColors.terminalGreen;
+    final selectedIconColor = AppColors.accentColor(brightness);
     final normalIconColor = isDark
         ? AppColors.githubUnselectedDark
         : AppColors.githubUnselectedLight;

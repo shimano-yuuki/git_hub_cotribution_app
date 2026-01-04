@@ -17,26 +17,35 @@ class SaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final accentColor = AppColors.accentColor(brightness);
+
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.terminalGreen,
-        foregroundColor: AppColors.githubDarkBg,
+        backgroundColor: accentColor,
+        foregroundColor: brightness == Brightness.dark
+            ? AppColors.githubDarkBg
+            : AppColors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 0,
       ),
       child: isLoading
-          ? const ThemedLoadingAnimation(
+          ? ThemedLoadingAnimation(
               size: 24.0,
-              color: AppColors.githubDarkBg,
+              color: brightness == Brightness.dark
+                  ? AppColors.githubDarkBg
+                  : AppColors.white,
             )
           : Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.githubDarkBg,
+                color: brightness == Brightness.dark
+                    ? AppColors.githubDarkBg
+                    : AppColors.white,
               ),
             ),
     );

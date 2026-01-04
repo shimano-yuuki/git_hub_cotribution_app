@@ -108,4 +108,10 @@ class AppColors {
   static Color borderColor(Brightness brightness) {
     return brightness == Brightness.dark ? githubDarkBorder : githubLightBorder;
   }
+
+  /// テーマに応じたアクセントカラーを取得
+  /// ライトモードでは蛍光色を避けてgithubGreenを使用
+  static Color accentColor(Brightness brightness) {
+    return brightness == Brightness.dark ? terminalGreen : githubGreen;
+  }
 }
