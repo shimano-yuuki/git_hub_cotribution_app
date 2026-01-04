@@ -169,6 +169,7 @@ class GithubRepositoryImpl implements GithubRepository {
   }
 
   /// キャッシュからContributionデータを取得
+  @override
   Future<Either<Failure, List<Contribution>>> getCachedContributions(
     int year,
   ) async {

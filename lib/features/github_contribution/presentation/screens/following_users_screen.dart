@@ -63,7 +63,7 @@ class FollowingUsersScreen extends HookWidget {
     final isRetrying = useState<bool>(false);
 
     // ランキングを計算する関数
-    Future<void> _calculateRankings(String token, List<User> users) async {
+    Future<void> calculateRankings(String token, List<User> users) async {
       try {
         final weeklyRankingsList = <UserRanking>[];
         final allTimeRankingsList = <UserRanking>[];
@@ -293,7 +293,7 @@ class FollowingUsersScreen extends HookWidget {
             error.value = null;
             // ランキングを計算（非同期で実行）
             if (users.isNotEmpty) {
-              _calculateRankings(token.value, users);
+              calculateRankings(token.value, users);
             }
           },
         );
