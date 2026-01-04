@@ -11,11 +11,3 @@ class GetThemeModeUseCase {
     return await repository.getThemeMode();
   }
 }
-
-
-
-
-
-
-
-

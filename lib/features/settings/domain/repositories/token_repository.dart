@@ -11,5 +11,3 @@ abstract class TokenRepository {
   /// トークンを削除する
   Future<void> deleteToken();
 }
-
-

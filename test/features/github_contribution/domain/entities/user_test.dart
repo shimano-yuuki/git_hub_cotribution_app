@@ -29,10 +29,7 @@ void main() {
 
       test('最小限のフィールドのみでUserを作成できる', () {
         // Arrange
-        const user = User(
-          login: 'minimaluser',
-          name: 'Minimal User',
-        );
+        const user = User(login: 'minimaluser', name: 'Minimal User');
 
         // Assert
         expect(user.login, 'minimaluser');
@@ -74,14 +71,8 @@ void main() {
 
       test('異なるloginのUserは等しくない', () {
         // Arrange
-        const user1 = User(
-          login: 'user1',
-          name: 'User 1',
-        );
-        const user2 = User(
-          login: 'user2',
-          name: 'User 1',
-        );
+        const user1 = User(login: 'user1', name: 'User 1');
+        const user2 = User(login: 'user2', name: 'User 1');
 
         // Assert
         expect(user1, isNot(user2));
@@ -89,14 +80,8 @@ void main() {
 
       test('異なるnameのUserは等しくない', () {
         // Arrange
-        const user1 = User(
-          login: 'testuser',
-          name: 'User 1',
-        );
-        const user2 = User(
-          login: 'testuser',
-          name: 'User 2',
-        );
+        const user1 = User(login: 'testuser', name: 'User 1');
+        const user2 = User(login: 'testuser', name: 'User 2');
 
         // Assert
         expect(user1, isNot(user2));
@@ -113,10 +98,7 @@ void main() {
           followers: null,
           following: null,
         );
-        const user2 = User(
-          login: 'testuser',
-          name: 'Test User',
-        );
+        const user2 = User(login: 'testuser', name: 'Test User');
 
         // Assert
         expect(user1, user2);
@@ -126,10 +108,7 @@ void main() {
     group('境界値テスト', () {
       test('空文字列のloginとnameでUserを作成できる', () {
         // Arrange
-        const user = User(
-          login: '',
-          name: '',
-        );
+        const user = User(login: '', name: '');
 
         // Assert
         expect(user.login, '');
@@ -139,10 +118,7 @@ void main() {
       test('非常に長い文字列でもUserを作成できる', () {
         // Arrange
         final longString = 'a' * 1000;
-        final user = User(
-          login: longString,
-          name: longString,
-        );
+        final user = User(login: longString, name: longString);
 
         // Assert
         expect(user.login, longString);
@@ -190,4 +166,3 @@ void main() {
     });
   });
 }
-

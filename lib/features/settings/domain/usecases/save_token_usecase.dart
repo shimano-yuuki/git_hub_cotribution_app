@@ -8,9 +8,9 @@ class SaveTokenUseCase {
   SaveTokenUseCase(this.repository);
 
   /// トークンを保存する
-  /// 
+  ///
   /// [token] 保存するトークン
-  /// 
+  ///
   /// Throws [Exception] if token is invalid
   Future<void> call(Token token) async {
     if (!token.isValid) {
@@ -19,11 +19,3 @@ class SaveTokenUseCase {
     await repository.saveToken(token);
   }
 }
-
-
-
-
-
-
-
-

@@ -6,11 +6,7 @@ class GlassContainer extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
 
-  const GlassContainer({
-    super.key,
-    required this.child,
-    this.padding,
-  });
+  const GlassContainer({super.key, required this.child, this.padding});
 
   @override
   Widget build(BuildContext context) {
@@ -51,12 +47,7 @@ class GlassContainer extends StatelessWidget {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: child,
-      ),
+      child: ClipRRect(borderRadius: BorderRadius.circular(24), child: child),
     );
   }
 }
-
-

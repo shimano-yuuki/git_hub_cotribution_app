@@ -11,11 +11,9 @@ import '../../../../fixtures/test_data.dart';
 import 'get_following_users_usecase_test.mocks.dart';
 import '../../../../helpers/mockito_helpers.dart';
 
-
 @GenerateMocks([GithubRepository])
 void main() {
   setupMockitoDummies();
-
 
   group('GetFollowingUsersUseCase', () {
     late GetFollowingUsersUseCase useCase;
@@ -31,23 +29,21 @@ void main() {
         // Arrange
         const token = 'valid_token';
         final users = TestData.userList();
-        when(mockRepository.getFollowingUsers(token))
-            .thenAnswer((_) async => Right(users));
+        when(
+          mockRepository.getFollowingUsers(token),
+        ).thenAnswer((_) async => Right(users));
 
         // Act
         final result = await useCase.call(token);
 
         // Assert
         expect(result.isRight(), true);
-        result.fold(
-          (failure) => fail('エラーが発生すべきではありません'),
-          (usersList) {
-            expect(usersList.length, 3);
-            expect(usersList[0].login, 'testuser');
-            expect(usersList[1].login, 'user2');
-            expect(usersList[2].login, 'user3');
-          },
-        );
+        result.fold((failure) => fail('エラーが発生すべきではありません'), (usersList) {
+          expect(usersList.length, 3);
+          expect(usersList[0].login, 'testuser');
+          expect(usersList[1].login, 'user2');
+          expect(usersList[2].login, 'user3');
+        });
         verify(mockRepository.getFollowingUsers(token)).called(1);
         verifyNoMoreInteractions(mockRepository);
       });
@@ -56,8 +52,9 @@ void main() {
         // Arrange
         const token = 'valid_token';
         final emptyUsers = <User>[];
-        when(mockRepository.getFollowingUsers(token))
-            .thenAnswer((_) async => Right(emptyUsers));
+        when(
+          mockRepository.getFollowingUsers(token),
+        ).thenAnswer((_) async => Right(emptyUsers));
 
         // Act
         final result = await useCase.call(token);
@@ -77,21 +74,19 @@ void main() {
         // Arrange
         const token = 'valid_token';
         const failure = ServerFailure('サーバーエラーが発生しました');
-        when(mockRepository.getFollowingUsers(token))
-            .thenAnswer((_) async => const Left(failure));
+        when(
+          mockRepository.getFollowingUsers(token),
+        ).thenAnswer((_) async => const Left(failure));
 
         // Act
         final result = await useCase.call(token);
 
         // Assert
         expect(result.isLeft(), true);
-        result.fold(
-          (failureResult) {
-            expect(failureResult, isA<ServerFailure>());
-            expect(failureResult.message, 'サーバーエラーが発生しました');
-          },
-          (users) => fail('エラーが発生すべきです'),
-        );
+        result.fold((failureResult) {
+          expect(failureResult, isA<ServerFailure>());
+          expect(failureResult.message, 'サーバーエラーが発生しました');
+        }, (users) => fail('エラーが発生すべきです'));
         verify(mockRepository.getFollowingUsers(token)).called(1);
       });
 
@@ -99,21 +94,19 @@ void main() {
         // Arrange
         const token = 'valid_token';
         const failure = NetworkFailure('ネットワークエラーが発生しました');
-        when(mockRepository.getFollowingUsers(token))
-            .thenAnswer((_) async => const Left(failure));
+        when(
+          mockRepository.getFollowingUsers(token),
+        ).thenAnswer((_) async => const Left(failure));
 
         // Act
         final result = await useCase.call(token);
 
         // Assert
         expect(result.isLeft(), true);
-        result.fold(
-          (failureResult) {
-            expect(failureResult, isA<NetworkFailure>());
-            expect(failureResult.message, 'ネットワークエラーが発生しました');
-          },
-          (users) => fail('エラーが発生すべきです'),
-        );
+        result.fold((failureResult) {
+          expect(failureResult, isA<NetworkFailure>());
+          expect(failureResult.message, 'ネットワークエラーが発生しました');
+        }, (users) => fail('エラーが発生すべきです'));
         verify(mockRepository.getFollowingUsers(token)).called(1);
       });
 
@@ -121,21 +114,19 @@ void main() {
         // Arrange
         const token = 'invalid_token';
         const failure = AuthenticationFailure('認証に失敗しました');
-        when(mockRepository.getFollowingUsers(token))
-            .thenAnswer((_) async => const Left(failure));
+        when(
+          mockRepository.getFollowingUsers(token),
+        ).thenAnswer((_) async => const Left(failure));
 
         // Act
         final result = await useCase.call(token);
 
         // Assert
         expect(result.isLeft(), true);
-        result.fold(
-          (failureResult) {
-            expect(failureResult, isA<AuthenticationFailure>());
-            expect(failureResult.message, '認証に失敗しました');
-          },
-          (users) => fail('エラーが発生すべきです'),
-        );
+        result.fold((failureResult) {
+          expect(failureResult, isA<AuthenticationFailure>());
+          expect(failureResult.message, '認証に失敗しました');
+        }, (users) => fail('エラーが発生すべきです'));
         verify(mockRepository.getFollowingUsers(token)).called(1);
       });
     });
@@ -145,8 +136,9 @@ void main() {
         // Arrange
         const token = '';
         const failure = AuthenticationFailure('認証に失敗しました');
-        when(mockRepository.getFollowingUsers(token))
-            .thenAnswer((_) async => const Left(failure));
+        when(
+          mockRepository.getFollowingUsers(token),
+        ).thenAnswer((_) async => const Left(failure));
 
         // Act
         final result = await useCase.call(token);
@@ -160,8 +152,9 @@ void main() {
         // Arrange
         final longToken = 'a' * 1000;
         final users = TestData.userList();
-        when(mockRepository.getFollowingUsers(longToken))
-            .thenAnswer((_) async => Right(users));
+        when(
+          mockRepository.getFollowingUsers(longToken),
+        ).thenAnswer((_) async => Right(users));
 
         // Act
         final result = await useCase.call(longToken);
@@ -173,4 +166,3 @@ void main() {
     });
   });
 }
-

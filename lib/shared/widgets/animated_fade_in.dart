@@ -117,5 +117,3 @@ class AnimatedFadeSlideIn extends StatelessWidget {
     );
   }
 }
-
-

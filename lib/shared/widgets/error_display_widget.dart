@@ -121,11 +121,7 @@ class ErrorDisplayWidget extends StatelessWidget {
                     color: errorInfo.color.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    errorInfo.icon,
-                    color: errorInfo.color,
-                    size: 24,
-                  ),
+                  child: Icon(errorInfo.icon, color: errorInfo.color, size: 24),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -144,11 +140,7 @@ class ErrorDisplayWidget extends StatelessWidget {
             // エラーメッセージ
             Text(
               message,
-              style: TextStyle(
-                fontSize: 14,
-                color: textColor,
-                height: 1.5,
-              ),
+              style: TextStyle(fontSize: 14, color: textColor, height: 1.5),
             ),
             const SizedBox(height: 12),
             // アクション案内
@@ -163,11 +155,7 @@ class ErrorDisplayWidget extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: errorInfo.color,
-                  ),
+                  Icon(Icons.info_outline, size: 16, color: errorInfo.color),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -234,17 +222,11 @@ class CompactErrorDisplayWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: errorInfo.color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: errorInfo.color.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: errorInfo.color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
-          Icon(
-            errorInfo.icon,
-            size: 20,
-            color: errorInfo.color,
-          ),
+          Icon(errorInfo.icon, size: 20, color: errorInfo.color),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -273,11 +255,7 @@ class CompactErrorDisplayWidget extends StatelessWidget {
             const SizedBox(width: 8),
             IconButton(
               onPressed: onRetry,
-              icon: Icon(
-                Icons.refresh,
-                size: 20,
-                color: errorInfo.color,
-              ),
+              icon: Icon(Icons.refresh, size: 20, color: errorInfo.color),
               tooltip: '再試行',
             ),
           ],
@@ -286,6 +264,3 @@ class CompactErrorDisplayWidget extends StatelessWidget {
     );
   }
 }
-
-
-
