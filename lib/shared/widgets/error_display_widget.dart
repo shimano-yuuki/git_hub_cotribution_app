@@ -264,3 +264,4 @@ class CompactErrorDisplayWidget extends StatelessWidget {
     );
   }
 }
+

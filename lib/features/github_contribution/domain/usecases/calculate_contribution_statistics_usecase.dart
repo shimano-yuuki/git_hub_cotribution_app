@@ -168,3 +168,4 @@ class _StreakResult {
     required this.longestStreak,
   });
 }
+

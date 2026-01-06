@@ -19,3 +19,4 @@ class GetUserUseCase {
     return repository.getUser(token, username);
   }
 }
+

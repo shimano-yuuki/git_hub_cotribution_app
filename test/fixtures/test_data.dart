@@ -100,3 +100,4 @@ class TestData {
     UserRanking(user: userList()[2], contributionCount: 60, rank: 3),
   ];
 }
+
