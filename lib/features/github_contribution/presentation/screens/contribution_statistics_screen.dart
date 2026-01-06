@@ -4,7 +4,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/contribution_statistics.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../../../shared/widgets/animated_fade_in.dart';
-import '../../../../shared/widgets/geometric_background.dart';
 
 /// Contribution統計情報を表示する画面
 class ContributionStatisticsScreen extends StatelessWidget {
@@ -24,8 +23,8 @@ class ContributionStatisticsScreen extends StatelessWidget {
 
     return Scaffold(
       extendBody: true,
-      body: GeometricBackground(
-        child: SafeArea(
+      backgroundColor: brightness == Brightness.dark ? Colors.black : Colors.white,
+      body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -40,6 +39,23 @@ class ContributionStatisticsScreen extends StatelessWidget {
                       IconButton(
                         icon: Icon(Icons.arrow_back, color: textColor),
                         onPressed: () => context.pop(),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '統計データ',
+                        style: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '$year年',
+                        style: TextStyle(
+                          color: textColor.withValues(alpha: 0.7),
+                          fontSize: 14,
+                        ),
                       ),
                     ],
                   ),
@@ -105,7 +121,6 @@ class ContributionStatisticsScreen extends StatelessWidget {
               ],
             ),
           ),
-        ),
       ),
     );
   }

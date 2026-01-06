@@ -17,7 +17,7 @@ import '../../data/repositories/github_repository_impl.dart';
 import '../../domain/repositories/github_repository.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../../../shared/widgets/error_display_widget.dart';
-import '../../../../shared/widgets/geometric_background.dart';
+import '../../data/datasources/github_local_datasource.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -51,6 +51,8 @@ class FollowingUsersScreen extends HookWidget {
     final getContributionsUseCase = useMemoized(
       () => GetContributionsUseCase(githubRepository),
     );
+
+    final localDataSource = useMemoized(() => GithubLocalDataSource());
 
     // 状態管理
     final followingUsers = useState<List<User>>([]);
@@ -246,6 +248,16 @@ class FollowingUsersScreen extends HookWidget {
             rank: entry.key + 1,
           );
         }).toList();
+
+        // ランキングをキャッシュに保存
+        try {
+          await localDataSource.cacheRankings(
+            weeklyRankings.value,
+            allTimeRankings.value,
+          );
+        } catch (e) {
+          // キャッシュの保存エラーは無視
+        }
       } catch (e) {
         // エラーを無視（既にエラーハンドリング済み）
       }
@@ -291,8 +303,15 @@ class FollowingUsersScreen extends HookWidget {
           (users) {
             followingUsers.value = users;
             error.value = null;
+            // フォロー中のユーザーをキャッシュに保存（非同期で実行）
+            localDataSource.cacheFollowingUsers(users).catchError((e) {
+              // キャッシュの保存エラーは無視
+            });
             // ランキングを計算（非同期で実行）
-            if (users.isNotEmpty) {
+            // ランキングデータが既に存在する場合は再計算しない
+            if (users.isNotEmpty &&
+                weeklyRankings.value.isEmpty &&
+                allTimeRankings.value.isEmpty) {
               calculateRankings(token.value, users);
             }
           },
@@ -315,184 +334,199 @@ class FollowingUsersScreen extends HookWidget {
       await fetchFollowingUsers(isRefresh: true);
     }
 
+    // キャッシュからデータを読み込む関数
+    Future<void> loadCachedData() async {
+      try {
+        // キャッシュからフォロー中のユーザーを読み込み
+        final cachedUsers = await localDataSource.getCachedFollowingUsers();
+        if (cachedUsers != null && cachedUsers.isNotEmpty) {
+          followingUsers.value = cachedUsers;
+        }
+
+        // キャッシュからランキングを読み込み
+        final cachedRankings = await localDataSource.getCachedRankings();
+        if (cachedRankings != null) {
+          weeklyRankings.value = cachedRankings['weekly']!;
+          allTimeRankings.value = cachedRankings['allTime']!;
+        }
+      } catch (e) {
+        // キャッシュの読み込みエラーは無視
+      }
+    }
+
     // 初期化時にデータを取得
     useEffect(() {
-      fetchFollowingUsers();
+      // まずキャッシュから読み込む（即座に表示するため）
+      loadCachedData().then((_) {
+        // 常にAPIから最新データを取得して更新する
+        // キャッシュにデータがあれば先に表示し、最新データで更新
+        fetchFollowingUsers();
+      });
       return null;
     }, []);
 
     return Scaffold(
       extendBody: true,
-      body: GeometricBackground(
-        child: Stack(
-          children: [
-            SafeArea(
-              child: RefreshIndicator(
-                onRefresh: () => fetchFollowingUsers(isRefresh: true),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ヘッダー
-                      Row(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.arrow_back, color: textColor),
-                            onPressed: () => context.pop(),
-                          ),
-                          const SizedBox(width: 16),
-                          Text(
-                            'フォロー中のユーザー',
-                            style: TextStyle(
-                              color: textColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                          const Spacer(),
-                          // ローディングインジケーター（初回読み込み時のみ）
-                          if (isLoading.value && !isRefreshing.value)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16),
-                              child: SpinKitFadingCube(
-                                color: AppColors.accentColor(brightness),
-                                size: 24.0,
-                              ),
-                            ),
-                          // ランキングデータ取得中のローディング
-                          if (!isLoading.value &&
-                              error.value == null &&
-                              followingUsers.value.isNotEmpty &&
-                              (selectedTab.value == 0
-                                      ? weeklyRankings.value
-                                      : allTimeRankings.value)
-                                  .isEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16),
-                              child: SpinKitFadingCube(
-                                color: AppColors.accentColor(brightness),
-                                size: 24.0,
-                              ),
-                            ),
-                        ],
+      backgroundColor: brightness == Brightness.dark
+          ? Colors.black
+          : Colors.white,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () => fetchFollowingUsers(isRefresh: true),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ヘッダー
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.arrow_back, color: textColor),
+                      onPressed: () => context.pop(),
+                    ),
+                    const SizedBox(width: 16),
+                    Text(
+                      'フォロー中のユーザー',
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
                       ),
-                      const SizedBox(height: 24),
-                      // タブ切り替え
-                      if (error.value == null &&
-                          followingUsers.value.isNotEmpty)
-                        _RankingTabs(
-                          selectedIndex: selectedTab.value,
-                          onTabChanged: (index) {
-                            selectedTab.value = index;
-                          },
-                          textColor: textColor,
+                    ),
+                    const Spacer(),
+                    // ローディングインジケーター（初回読み込み時のみ）
+                    if (isLoading.value && !isRefreshing.value)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: SpinKitFadingCube(
+                          color: AppColors.accentColor(brightness),
+                          size: 24.0,
                         ),
-                      if (error.value == null &&
-                          followingUsers.value.isNotEmpty)
-                        const SizedBox(height: 16),
-                      // エラーメッセージ表示
-                      if (error.value != null && !isLoading.value)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Stack(
-                            children: [
-                              ErrorDisplayWidget(
-                                failure: error.value!,
-                                onRetry: isRetrying.value ? null : retryFetch,
-                              ),
-                              if (isRetrying.value)
-                                Positioned.fill(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                      borderRadius: BorderRadius.circular(24),
-                                    ),
-                                    child: Center(
-                                      child: SpinKitFadingCube(
-                                        color: AppColors.accentColor(
-                                          brightness,
-                                        ),
-                                        size: 40.0,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      // ランキング表示
-                      if (error.value == null)
-                        // 初回ローディング中は何も表示しない（スケルトンUIは別で表示）
-                        if (isLoading.value && !isRefreshing.value)
-                          _SkeletonRankingList()
-                        else if (!isLoading.value &&
-                            followingUsers.value.isEmpty)
-                          GlassContainer(
-                            padding: const EdgeInsets.all(24),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.people_outline,
-                                    size: 64,
-                                    color: textColor.withValues(alpha: 0.5),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'フォロー中のユーザーがいません',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: textColor.withValues(alpha: 0.7),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          )
-                        else if ((selectedTab.value == 0
+                      ),
+                    // ランキングデータ取得中のローディング
+                    if (!isLoading.value &&
+                        error.value == null &&
+                        followingUsers.value.isNotEmpty &&
+                        (selectedTab.value == 0
                                 ? weeklyRankings.value
                                 : allTimeRankings.value)
                             .isEmpty)
-                          _SkeletonRankingList()
-                        else
-                          Column(
-                            children: [
-                              for (
-                                int i = 0;
-                                i <
-                                    (selectedTab.value == 0
-                                        ? weeklyRankings.value.length
-                                        : allTimeRankings.value.length);
-                                i++
-                              )
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: _RankingItem(
-                                    ranking: selectedTab.value == 0
-                                        ? weeklyRankings.value[i]
-                                        : allTimeRankings.value[i],
-                                    textColor: textColor,
-                                    onTap: () {
-                                      context.push(
-                                        '/user/${(selectedTab.value == 0 ? weeklyRankings.value[i] : allTimeRankings.value[i]).user.login}',
-                                      );
-                                    },
-                                  ),
-                                ),
-                            ],
-                          ),
-                      const SizedBox(height: 64),
-                    ],
-                  ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: SpinKitFadingCube(
+                          color: AppColors.accentColor(brightness),
+                          size: 24.0,
+                        ),
+                      ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 24),
+                // タブ切り替え
+                if (error.value == null && followingUsers.value.isNotEmpty)
+                  _RankingTabs(
+                    selectedIndex: selectedTab.value,
+                    onTabChanged: (index) {
+                      selectedTab.value = index;
+                    },
+                    textColor: textColor,
+                  ),
+                if (error.value == null && followingUsers.value.isNotEmpty)
+                  const SizedBox(height: 16),
+                // エラーメッセージ表示
+                if (error.value != null && !isLoading.value)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Stack(
+                      children: [
+                        ErrorDisplayWidget(
+                          failure: error.value!,
+                          onRetry: isRetrying.value ? null : retryFetch,
+                        ),
+                        if (isRetrying.value)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: Center(
+                                child: SpinKitFadingCube(
+                                  color: AppColors.accentColor(brightness),
+                                  size: 40.0,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                // ランキング表示
+                if (error.value == null)
+                  // 初回ローディング中は何も表示しない（スケルトンUIは別で表示）
+                  if (isLoading.value && !isRefreshing.value)
+                    _SkeletonRankingList()
+                  else if (!isLoading.value && followingUsers.value.isEmpty)
+                    GlassContainer(
+                      padding: const EdgeInsets.all(24),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.people_outline,
+                              size: 64,
+                              color: textColor.withValues(alpha: 0.5),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'フォロー中のユーザーがいません',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: textColor.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if ((selectedTab.value == 0
+                          ? weeklyRankings.value
+                          : allTimeRankings.value)
+                      .isEmpty)
+                    _SkeletonRankingList()
+                  else
+                    Column(
+                      children: [
+                        for (
+                          int i = 0;
+                          i <
+                              (selectedTab.value == 0
+                                  ? weeklyRankings.value.length
+                                  : allTimeRankings.value.length);
+                          i++
+                        )
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _RankingItem(
+                              ranking: selectedTab.value == 0
+                                  ? weeklyRankings.value[i]
+                                  : allTimeRankings.value[i],
+                              textColor: textColor,
+                              onTap: () {
+                                context.push(
+                                  '/user/${(selectedTab.value == 0 ? weeklyRankings.value[i] : allTimeRankings.value[i]).user.login}',
+                                );
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
+                const SizedBox(height: 64),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
