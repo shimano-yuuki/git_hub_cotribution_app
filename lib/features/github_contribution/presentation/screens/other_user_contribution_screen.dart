@@ -18,7 +18,6 @@ import '../../../../shared/widgets/animated_fade_in.dart';
 import '../../../../shared/widgets/loading_animation.dart';
 import '../../../../shared/widgets/error_display_widget.dart';
 import '../../../../shared/widgets/statistics_button.dart';
-import '../../../../shared/widgets/geometric_background.dart';
 import '../../domain/usecases/calculate_contribution_statistics_usecase.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -145,254 +144,248 @@ class OtherUserContributionScreen extends HookWidget {
 
     return Scaffold(
       extendBody: true,
-      body: GeometricBackground(
-        child: SafeArea(
-          child: Stack(
-            children: [
-              RefreshIndicator(
-                onRefresh: () => fetchUserData(isRefresh: true),
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
-                      // ヘッダー
-                      AnimatedFadeIn(
-                        delay: 100.0,
-                        child: Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.arrow_back, color: textColor),
-                              onPressed: () => context.pop(),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                user.value?.name ?? username,
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+      backgroundColor: brightness == Brightness.dark
+          ? Colors.black
+          : Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: () => fetchUserData(isRefresh: true),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 24),
+                    // ヘッダー
+                    AnimatedFadeIn(
+                      delay: 100.0,
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.arrow_back, color: textColor),
+                            onPressed: () => context.pop(),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              user.value?.name ?? username,
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      // ユーザー情報セクション
-                      if (user.value != null && !isLoading.value)
-                        AnimatedFadeIn(
-                          delay: 100.0,
-                          child: GlassContainer(
-                            padding: const EdgeInsets.all(20),
-                            child: Row(
-                              children: [
-                                // アバター
-                                if (user.value!.avatarUrl != null)
-                                  CircleAvatar(
-                                    radius: 40,
-                                    backgroundImage: NetworkImage(
-                                      user.value!.avatarUrl!,
-                                    ),
-                                  )
-                                else
-                                  CircleAvatar(
-                                    radius: 40,
-                                    backgroundColor: textColor.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                    child: Icon(
-                                      Icons.person,
-                                      color: textColor,
-                                      size: 40,
-                                    ),
-                                  ),
-                                const SizedBox(width: 16),
-                                // ユーザー情報
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        user.value!.name,
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: textColor,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '@${user.value!.login}',
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: textColor.withValues(
-                                            alpha: 0.7,
-                                          ),
-                                        ),
-                                      ),
-                                      if (user.value!.bio != null &&
-                                          user.value!.bio!.isNotEmpty) ...[
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          user.value!.bio!,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: textColor.withValues(
-                                              alpha: 0.8,
-                                            ),
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ],
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ),
-                      if (user.value != null && !isLoading.value)
-                        const SizedBox(height: 24),
-                      // Contributionカレンダーセクション
-                      if (!isLoading.value)
-                        AnimatedFadeIn(
-                          delay: 150.0,
-                          child: GlassContainer(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 16),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    // ユーザー情報セクション
+                    if (user.value != null && !isLoading.value)
+                      AnimatedFadeIn(
+                        delay: 100.0,
+                        child: GlassContainer(
+                          padding: const EdgeInsets.all(20),
+                          child: Row(
+                            children: [
+                              // アバター
+                              if (user.value!.avatarUrl != null)
+                                CircleAvatar(
+                                  radius: 40,
+                                  backgroundImage: NetworkImage(
+                                    user.value!.avatarUrl!,
+                                  ),
+                                )
+                              else
+                                CircleAvatar(
+                                  radius: 40,
+                                  backgroundColor: textColor.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                  child: Icon(
+                                    Icons.person,
+                                    color: textColor,
+                                    size: 40,
+                                  ),
+                                ),
+                              const SizedBox(width: 16),
+                              // ユーザー情報
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    AnimatedFadeIn(
-                                      delay: 200.0,
-                                      child: Text(
-                                        'Contribution Calendar',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: textColor,
-                                        ),
+                                    Text(
+                                      user.value!.name,
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: textColor,
                                       ),
                                     ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '@${user.value!.login}',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: textColor.withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                    if (user.value!.bio != null &&
+                                        user.value!.bio!.isNotEmpty) ...[
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        user.value!.bio!,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: textColor.withValues(
+                                            alpha: 0.8,
+                                          ),
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
                                   ],
                                 ),
-                                const SizedBox(height: 24),
-                                // エラーメッセージ表示
-                                if (error.value != null && !isLoading.value)
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (user.value != null && !isLoading.value)
+                      const SizedBox(height: 24),
+                    // Contributionカレンダーセクション
+                    if (!isLoading.value)
+                      AnimatedFadeIn(
+                        delay: 150.0,
+                        child: GlassContainer(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
                                   AnimatedFadeIn(
-                                    delay: 300.0,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 16,
+                                    delay: 200.0,
+                                    child: Text(
+                                      'Contribution Calendar',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: textColor,
                                       ),
-                                      child: Stack(
-                                        children: [
-                                          ErrorDisplayWidget(
-                                            failure: error.value!,
-                                            onRetry: isRetrying.value
-                                                ? null
-                                                : retryFetch,
-                                          ),
-                                          if (isRetrying.value)
-                                            Positioned.fill(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.black
-                                                      .withValues(alpha: 0.3),
-                                                  borderRadius:
-                                                      BorderRadius.circular(24),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              // エラーメッセージ表示
+                              if (error.value != null && !isLoading.value)
+                                AnimatedFadeIn(
+                                  delay: 300.0,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: Stack(
+                                      children: [
+                                        ErrorDisplayWidget(
+                                          failure: error.value!,
+                                          onRetry: isRetrying.value
+                                              ? null
+                                              : retryFetch,
+                                        ),
+                                        if (isRetrying.value)
+                                          Positioned.fill(
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.black.withValues(
+                                                  alpha: 0.3,
                                                 ),
-                                                child: const Center(
-                                                  child: ThemedLoadingAnimation(
-                                                    size: 40.0,
-                                                  ),
+                                                borderRadius:
+                                                    BorderRadius.circular(24),
+                                              ),
+                                              child: const Center(
+                                                child: ThemedLoadingAnimation(
+                                                  size: 40.0,
                                                 ),
                                               ),
                                             ),
-                                        ],
-                                      ),
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                // カレンダーウィジェットまたはエラー表示
-                                if (!isLoading.value &&
-                                    error.value == null &&
-                                    contributions.value.isNotEmpty)
-                                  AnimatedSwitcher(
-                                    duration: const Duration(milliseconds: 400),
-                                    transitionBuilder: (child, animation) {
-                                      return FadeTransition(
-                                        opacity: animation,
-                                        child: child,
-                                      );
+                                ),
+                              // カレンダーウィジェットまたはエラー表示
+                              if (!isLoading.value &&
+                                  error.value == null &&
+                                  contributions.value.isNotEmpty)
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 400),
+                                  transitionBuilder: (child, animation) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  child: ContributionCalendarWidget(
+                                    key: const ValueKey('calendar'),
+                                    contributions: contributions.value,
+                                    initialYear: selectedYear.value,
+                                    onYearChanged: (newYear) {
+                                      selectedYear.value = newYear;
                                     },
-                                    child: ContributionCalendarWidget(
-                                      key: const ValueKey('calendar'),
-                                      contributions: contributions.value,
-                                      initialYear: selectedYear.value,
-                                      onYearChanged: (newYear) {
-                                        selectedYear.value = newYear;
-                                      },
-                                    ),
-                                  )
-                                else if (!isLoading.value &&
-                                    error.value == null &&
-                                    contributions.value.isEmpty)
-                                  AnimatedFadeIn(
-                                    delay: 300.0,
-                                    child: Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: 16,
+                                  ),
+                                )
+                              else if (!isLoading.value &&
+                                  error.value == null &&
+                                  contributions.value.isEmpty)
+                                AnimatedFadeIn(
+                                  delay: 300.0,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: ErrorDisplayWidget(
+                                      failure: const CacheFailure(
+                                        'データが見つかりませんでした。',
                                       ),
-                                      child: ErrorDisplayWidget(
-                                        failure: const CacheFailure(
-                                          'データが見つかりませんでした。',
-                                        ),
-                                        onRetry: isRetrying.value
-                                            ? null
-                                            : retryFetch,
-                                      ),
+                                      onRetry: isRetrying.value
+                                          ? null
+                                          : retryFetch,
                                     ),
                                   ),
-                                const SizedBox(height: 16),
-                                // 統計データ確認ボタン
-                                if (!isLoading.value &&
-                                    contributions.value.isNotEmpty)
-                                  StatisticsButton(
-                                    statistics: calculateStatisticsUseCase(
-                                      contributions.value,
-                                    ),
-                                    year: selectedYear.value,
+                                ),
+                              const SizedBox(height: 16),
+                              // 統計データ確認ボタン
+                              if (!isLoading.value &&
+                                  contributions.value.isNotEmpty)
+                                StatisticsButton(
+                                  statistics: calculateStatisticsUseCase(
+                                    contributions.value,
                                   ),
-                              ],
-                            ),
+                                  year: selectedYear.value,
+                                ),
+                            ],
                           ),
                         ),
-                      const SizedBox(height: 64),
-                    ],
-                  ),
+                      ),
+                    const SizedBox(height: 64),
+                  ],
                 ),
               ),
-              // ローディングインジケーター（初回読み込み時のみ）
-              if (isLoading.value && !isRefreshing.value)
-                Center(
-                  child: SpinKitFadingCube(
-                    color: AppColors.accentColor(brightness),
-                    size: 80.0,
-                  ),
+            ),
+            if (isLoading.value && !isRefreshing.value)
+              Center(
+                child: SpinKitFadingCube(
+                  color: AppColors.accentColor(brightness),
+                  size: 80.0,
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );

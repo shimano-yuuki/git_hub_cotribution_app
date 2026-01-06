@@ -24,3 +24,4 @@ class GetUserContributionsUseCase {
     return repository.getUserContributions(token, username, year);
   }
 }
+

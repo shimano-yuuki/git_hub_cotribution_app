@@ -5,7 +5,6 @@ import 'package:circular_bottom_navigation/tab_item.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../core/theme/app_colors.dart';
-import 'geometric_background.dart';
 
 class MainNavigation extends HookWidget {
   const MainNavigation({super.key});
@@ -68,8 +67,8 @@ class MainNavigation extends HookWidget {
 
     return Scaffold(
       extendBody: true,
-      body: GeometricBackground(
-        child: AnimatedSwitcher(
+      backgroundColor: brightness == Brightness.dark ? Colors.black : Colors.white,
+      body: AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
           transitionBuilder: (child, animation) {
             return FadeTransition(
@@ -94,7 +93,6 @@ class MainNavigation extends HookWidget {
             child: screens[selectedPos.value],
           ),
         ),
-      ),
       bottomNavigationBar: Opacity(
         opacity: isLoading.value ? 0.5 : 1.0,
         child: CircularBottomNavigation(

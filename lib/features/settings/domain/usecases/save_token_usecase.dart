@@ -19,3 +19,4 @@ class SaveTokenUseCase {
     await repository.saveToken(token);
   }
 }
+

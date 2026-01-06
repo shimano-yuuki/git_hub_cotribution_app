@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/glass_container.dart';
 import '../../../../shared/widgets/animated_fade_in.dart';
+import '../../../../shared/widgets/geometric_background.dart';
 import '../providers/token_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/error_message_widget.dart';
@@ -73,8 +74,9 @@ class SettingsScreen extends HookWidget {
     final textColor = AppColors.textColor(brightness);
     final iconColor = AppColors.iconColor(brightness);
 
-    return Center(
-      child: SingleChildScrollView(
+    return GeometricBackground(
+      child: Center(
+        child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         child: AnimatedFadeSlideIn(
           delay: 100.0,
@@ -103,6 +105,7 @@ class SettingsScreen extends HookWidget {
               ],
             ),
           ),
+        ),
         ),
       ),
     );
