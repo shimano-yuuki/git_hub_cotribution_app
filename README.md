@@ -1,30 +1,35 @@
 # GitHub Contribution App
 
-GitHubのコントリビューション（草）を可視化・管理するFlutterアプリケーションです。
+GitHub のコントリビューション（草）を可視化・管理する Flutter アプリケーションです。
 
 ## 概要
 
-このアプリは、GitHubのPersonal Access Tokenを使用して、あなたのコントリビューション履歴を取得し、
+このアプリは、GitHub の Personal Access Token を使用して、あなたのコントリビューション履歴を取得し、
 見やすく表示します。日々の開発活動を追跡し、モチベーション維持に役立てることができます。
 
 ## 主な機能
 
 - 🟩 コントリビューションカレンダーの表示
-- 📅 日付タップでContribution詳細表示
+- 📅 日付タップで Contribution 詳細表示
 - 📊 日別・週別・月別の統計情報
 - 🔥 連続コントリビューション日数（ストリーク）の表示
-- ⚙️ Personal Access Tokenの安全な管理
+- ⚙️ Personal Access Token の安全な管理
 - 🔄 データのリフレッシュ機能
 - ✨ スムーズなアニメーション
-- 🎨 広告なしで洗練されたUI
+- 🎨 広告なしで洗練された UI
 
 ## スクリーンショット
 
 ### 現在鋭意作成中
 
 ## インストール
+
 後ほど...
 
+## ビルド方法
 
-##フォーマット
-dart format .
+### リリースモードでのビルド
+
+flutter build ios --release
+
+flutter install
